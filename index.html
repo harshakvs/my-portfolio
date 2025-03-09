@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Your Name | Portfolio</title>
+  <!-- Link to CSS -->
+  <link rel="stylesheet" href="css/style.css" />
+  <!-- Google Fonts (optional) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap"/>
+</head>
+<body>
+
+  <!-- ====== NAVBAR ====== -->
+  <nav class="navbar">
+    <div class="navbar__logo">
+      <a href="#">YourName</a>
+    </div>
+    <div class="navbar__links">
+      <a href="#about">About</a>
+      <a href="#projects">Projects</a>
+      <a href="#tableau">Tableau</a>
+      <a href="#contact">Contact</a>
+    </div>
+  </nav>
+
+  <!-- ====== HERO / HEADER SECTION ====== -->
+  <header class="hero">
+    <div class="hero__content">
+      <h1>Hello, I'm <span>Your Name</span>.</h1>
+      <p>I'm a [Your Profession / Title].</p>
+      <a href="#about" class="btn btn-primary">Learn More</a>
+    </div>
+  </header>
+
+  <!-- ====== ABOUT SECTION ====== -->
+  <section id="about" class="section about">
+    <h2>About Me</h2>
+    <p>
+      This is where you introduce yourself with a brief summary. 
+      Mention your background, skills, or what drives you professionally.
+    </p>
+  </section>
+
+  <!-- ====== PROJECTS SECTION ====== -->
+  <section id="projects" class="section projects">
+    <h2>Projects</h2>
+    <div class="projects__grid">
+      <!-- PROJECT 1 CARD -->
+      <div class="project__card">
+        <h3>Project 1</h3>
+        <p>
+          Short description of your project. It can be a web app, data analysis,
+          or anything else you’d like to showcase.
+        </p>
+        <a 
+          href="https://github.com/YourGitHubUsername/your-project" 
+          target="_blank" 
+          class="btn"
+          >View on GitHub</a
+        >
+      </div>
+
+      <!-- PROJECT 2 CARD -->
+      <div class="project__card">
+        <h3>Project 2</h3>
+        <p>
+          Another project description goes here. Outline what technologies 
+          you used, what challenges you solved, etc.
+        </p>
+        <a 
+          href="https://github.com/YourGitHubUsername/another-project" 
+          target="_blank" 
+          class="btn"
+          >View on GitHub</a
+        >
+      </div>
+
+      <!-- Add more project cards as needed -->
+    </div>
+  </section>
+
+  <!-- ====== TABLEAU SECTION ====== -->
+  <section id="tableau" class="section tableau">
+    <h2>Tableau Visualizations</h2>
+    <p>Below is an embedded example of a Tableau dashboard. Replace with your own embed code or link.</p>
+    
+    <!-- Example of an embedded Tableau Public viz -->
+    <!-- 
+       Get your embed code from Tableau Public and paste here. 
+       This is just a sample placeholder.
+    -->
+    <div class="tableau__embed">
+      <iframe 
+        src="https://public.tableau.com/views/YourVizName/Sheet1?:language=en-US&:display_count=n&:origin=viz_share_link" 
+        width="100%" 
+        height="500" 
+        style="border: none;"
+      >
+      </iframe>
+    </div>
+  </section>
+
+  <!-- ====== CONTACT SECTION ====== -->
+  <section id="contact" class="section contact">
+    <h2>Contact</h2>
+    <div class="contact__links">
+      <a 
+        href="https://www.linkedin.com/in/YourLinkedInProfile" 
+        class="contact__link"
+        target="_blank"
+        >LinkedIn</a
+      >
+      <a 
+        href="https://github.com/YourGitHubUsername" 
+        class="contact__link"
+        target="_blank"
+        >GitHub</a
+      >
+      <a 
+        href="docs/YourResume.pdf" 
+        class="contact__link"
+        target="_blank"
+        >Resume</a
+      >
+      <a href="mailto:youremail@domain.com" class="contact__link"
+        >Email Me</a
+      >
+    </div>
+  </section>
+
+  <!-- ====== FOOTER ====== -->
+  <footer class="footer">
+    <p>&copy; <span id="year"></span> Your Name. All rights reserved.</p>
+  </footer>
+
+  <!-- Link to JavaScript -->
+  <script src="js/script.js"></script>
+</body>
+</html>
