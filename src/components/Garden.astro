@@ -1,0 +1,39 @@
+---
+// Digital garden — wired up for Obsidian/Notion exports later.
+// Drop markdown into src/content/garden/ and this section grows into a full graph.
+const seeds = [
+  { name: 'cuda-notes', desc: 'Kernel launch configs, memory coalescing, profiling snippets', stage: 'seedling' },
+  { name: 'inference-cookbook', desc: 'Batching, KV cache, quantization recipes that actually worked', stage: 'seedling' },
+  { name: 'mlops-scars', desc: 'Things production taught me the hard way', stage: 'sprouting' },
+  { name: 'paper-shelf', desc: 'Papers I read, compressed to 5 bullets each', stage: 'seedling' },
+];
+---
+<section id="garden" class="section">
+  <div class="container">
+    <h2 class="section-title">tree ./digital_garden</h2>
+    <p class="section-sub">
+      Raw notes from my Obsidian vault, in public — less polished than articles, more honest.
+      Currently being transplanted; here's what's growing.
+    </p>
+    <div class="garden mono">
+      {seeds.map((s, i) => (
+        <div class="seed">
+          <span class="branch muted">{i === seeds.length - 1 ? '└──' : '├──'}</span>
+          <span class="leaf">🌱</span>
+          <div>
+            <span class="name">{s.name}/</span>
+            <span class="desc muted"> — {s.desc}</span>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .garden { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px 26px; font-size: 0.84rem; }
+  .seed { display: flex; gap: 10px; padding: 5px 0; align-items: baseline; }
+  .leaf { font-size: 0.8rem; }
+  .name { color: var(--accent2); }
+  .desc { font-size: 0.78rem; }
+</style>

@@ -1,0 +1,21 @@
+---
+import { profile } from '../data/profile';
+const year = new Date().getFullYear();
+const liveSocials = profile.socials.filter((s) => !s.comingSoon);
+---
+<footer class="footer">
+  <div class="container footer-inner mono">
+    <span class="muted">© {year} {profile.name} · built with Astro · no cookies, no trackers</span>
+    <span class="links">
+      {liveSocials.map((s) => <a href={s.url} target="_blank" rel="noopener">{s.label}</a>)}
+    </span>
+  </div>
+</footer>
+
+<style>
+  .footer { border-top: 1px solid var(--border); padding: 28px 0; margin-top: 40px; }
+  .footer-inner { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; font-size: 0.78rem; }
+  .links { display: flex; gap: 16px; }
+  .links a { color: var(--muted); }
+  .links a:hover { color: var(--accent); }
+</style>

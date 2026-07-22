@@ -1,0 +1,52 @@
+---
+import Logo from './Logo.astro';
+import { profile } from '../data/profile';
+import { url } from '../data/url';
+
+const links = [
+  { href: url('/#projects'), label: 'projects' },
+  { href: url('/#pipeline'), label: 'pipeline' },
+  { href: url('/blog'), label: 'writing' },
+  { href: url('/#arcade'), label: 'arcade' },
+  { href: url('/#travel'), label: 'travel' },
+  { href: url('/#contact'), label: 'contact' },
+];
+---
+<nav class="nav">
+  <div class="container nav-inner">
+    <a href={url('/')} class="brand" aria-label="Home">
+      <Logo size={34} />
+      <span class="brand-name mono">{profile.name.toLowerCase().replace(' ', '.')}</span>
+    </a>
+    <div class="links mono">
+      {links.map((l) => <a href={l.href}>./{l.label}</a>)}
+      <a href={url(profile.resume)} target="_blank" class="resume-link">resume.pdf</a>
+    </div>
+  </div>
+</nav>
+
+<style>
+  .nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(10, 15, 22, 0.82);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand:hover { text-decoration: none; }
+  .brand-name { color: var(--text); font-size: 0.95rem; font-weight: 500; }
+  .links { display: flex; gap: 22px; font-size: 0.85rem; }
+  .links a { color: var(--muted); transition: color 0.15s; }
+  .links a:hover { color: var(--accent); text-decoration: none; }
+  .resume-link {
+    color: var(--accent) !important;
+    border: 1px solid var(--border-bright); border-radius: 6px;
+    padding: 4px 12px; margin: -5px 0;
+  }
+  .resume-link:hover { border-color: var(--accent); }
+  @media (max-width: 720px) {
+    .brand-name { display: none; }
+    .links { gap: 14px; font-size: 0.78rem; flex-wrap: wrap; }
+  }
+</style>

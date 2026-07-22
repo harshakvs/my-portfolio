@@ -1,0 +1,208 @@
+---
+import { profile } from '../data/profile';
+import Logo from './Logo.astro';
+import { url } from '../data/url';
+
+const socialIcons: Record<string, string> = {
+  github:
+    'M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.55v-2.17c-3.2.7-3.87-1.36-3.87-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.19 1.76 1.19 1.03 1.76 2.7 1.25 3.35.96.1-.75.4-1.25.72-1.54-2.55-.29-5.24-1.28-5.24-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11.1 11.1 0 0 1 5.79 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.12 3.05.74.81 1.18 1.83 1.18 3.09 0 4.42-2.69 5.39-5.25 5.67.41.35.77 1.05.77 2.12v3.15c0 .3.21.66.8.55A11.5 11.5 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5z',
+  linkedin:
+    'M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z',
+  youtube:
+    'M23.5 6.19a3.02 3.02 0 0 0-2.12-2.14C19.5 3.55 12 3.55 12 3.55s-7.5 0-9.38.5A3.02 3.02 0 0 0 .5 6.19C0 8.07 0 12 0 12s0 3.93.5 5.81a3.02 3.02 0 0 0 2.12 2.14c1.88.5 9.38.5 9.38.5s7.5 0 9.38-.5a3.02 3.02 0 0 0 2.12-2.14C24 15.93 24 12 24 12s0-3.93-.5-5.81zM9.55 15.57V8.43L15.82 12l-6.27 3.57z',
+  medium:
+    'M13.54 12a6.8 6.8 0 0 1-6.77 6.82A6.8 6.8 0 0 1 0 12a6.8 6.8 0 0 1 6.77-6.82A6.8 6.8 0 0 1 13.54 12zm7.42 0c0 3.54-1.51 6.42-3.38 6.42-1.87 0-3.39-2.88-3.39-6.42s1.52-6.42 3.39-6.42 3.38 2.88 3.38 6.42zM24 12c0 3.17-.53 5.75-1.19 5.75-.66 0-1.19-2.58-1.19-5.75s.53-5.75 1.19-5.75S24 8.83 24 12z',
+};
+---
+<header class="hero">
+  <canvas id="neural-bg" aria-hidden="true"></canvas>
+  <div class="container hero-inner">
+    <div class="hero-left">
+      <p class="mono kicker"><span class="pulse-dot"></span> open to AI engineer roles</p>
+      <h1>
+        Hi, I'm <span class="name glow">{profile.name.split(' ')[0]}</span>.
+      </h1>
+      <p class="tagline">{profile.tagline}</p>
+
+      <div class="terminal mono" aria-label="Interactive terminal intro">
+        <div class="term-bar">
+          <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+          <span class="term-title">sreeharsha@portfolio: ~</span>
+        </div>
+        <div class="term-body" id="term-body" data-lines={JSON.stringify(profile.terminalLines)}></div>
+      </div>
+
+      <div class="cta-row">
+        <a href="#projects" class="btn btn-primary">see the work</a>
+        <a href="#contact" class="btn">hire me</a>
+        <div class="socials">
+          {profile.socials.map((s) =>
+            s.comingSoon ? (
+              <span class="social soon" title={`${s.label} — coming soon`}>
+                <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d={socialIcons[s.icon]} /></svg>
+              </span>
+            ) : (
+              <a class="social" href={s.url} target="_blank" rel="noopener" aria-label={s.label} title={s.label}>
+                <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d={socialIcons[s.icon]} /></svg>
+              </a>
+            )
+          )}
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-right">
+      <div class="photo-frame scanlines">
+        <img src={url(profile.photo)} alt={`Photo of ${profile.name}`} id="hero-photo" />
+        <div class="photo-fallback" hidden><Logo size={120} /></div>
+      </div>
+      <p class="mono photo-caption muted">// human, occasionally away from keyboard</p>
+    </div>
+  </div>
+</header>
+
+<script>
+  // Photo fallback: show logo until public/me.jpg exists
+  const img = document.getElementById('hero-photo') as HTMLImageElement;
+  img?.addEventListener('error', () => {
+    img.hidden = true;
+    document.querySelector<HTMLElement>('.photo-fallback')!.hidden = false;
+  });
+
+  // Typed terminal
+  const body = document.getElementById('term-body')!;
+  const lines: { cmd: string; out: string }[] = JSON.parse(body.dataset.lines!);
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  async function type() {
+    for (const line of lines) {
+      const p = document.createElement('p');
+      p.innerHTML = '<span class="prompt">$</span> <span class="cmd"></span>';
+      body.appendChild(p);
+      const cmdEl = p.querySelector('.cmd')!;
+      if (reduced) {
+        cmdEl.textContent = line.cmd;
+      } else {
+        for (const ch of line.cmd) {
+          cmdEl.textContent += ch;
+          await new Promise((r) => setTimeout(r, 28 + Math.random() * 40));
+        }
+        await new Promise((r) => setTimeout(r, 250));
+      }
+      const out = document.createElement('p');
+      out.className = 'out';
+      out.textContent = line.out;
+      body.appendChild(out);
+      if (!reduced) await new Promise((r) => setTimeout(r, 350));
+    }
+    const cursor = document.createElement('p');
+    cursor.innerHTML = '<span class="prompt">$</span> <span class="cursor">█</span>';
+    body.appendChild(cursor);
+  }
+  type();
+
+  // Neural constellation background
+  const canvas = document.getElementById('neural-bg') as HTMLCanvasElement;
+  const ctx = canvas.getContext('2d')!;
+  let w = 0, h = 0, raf = 0;
+  const N = 46;
+  const nodes = Array.from({ length: N }, () => ({
+    x: Math.random(), y: Math.random(),
+    vx: (Math.random() - 0.5) * 0.0005, vy: (Math.random() - 0.5) * 0.0005,
+  }));
+
+  function resize() {
+    const rect = canvas.parentElement!.getBoundingClientRect();
+    w = canvas.width = rect.width * devicePixelRatio;
+    h = canvas.height = rect.height * devicePixelRatio;
+  }
+  resize();
+  addEventListener('resize', resize);
+
+  function frame() {
+    ctx.clearRect(0, 0, w, h);
+    for (const n of nodes) {
+      n.x += n.vx; n.y += n.vy;
+      if (n.x < 0 || n.x > 1) n.vx *= -1;
+      if (n.y < 0 || n.y > 1) n.vy *= -1;
+    }
+    for (let i = 0; i < N; i++) {
+      for (let j = i + 1; j < N; j++) {
+        const dx = (nodes[i].x - nodes[j].x) * w;
+        const dy = (nodes[i].y - nodes[j].y) * h;
+        const d = Math.hypot(dx, dy);
+        const max = 0.14 * Math.min(w, h) + 80;
+        if (d < max) {
+          ctx.strokeStyle = `rgba(78, 240, 195, ${0.09 * (1 - d / max)})`;
+          ctx.lineWidth = devicePixelRatio;
+          ctx.beginPath();
+          ctx.moveTo(nodes[i].x * w, nodes[i].y * h);
+          ctx.lineTo(nodes[j].x * w, nodes[j].y * h);
+          ctx.stroke();
+        }
+      }
+    }
+    for (const n of nodes) {
+      ctx.fillStyle = 'rgba(78, 240, 195, 0.35)';
+      ctx.beginPath();
+      ctx.arc(n.x * w, n.y * h, 1.6 * devicePixelRatio, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    raf = requestAnimationFrame(frame);
+  }
+  if (!reduced) frame();
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) cancelAnimationFrame(raf);
+    else if (!reduced) frame();
+  });
+</script>
+
+<style>
+  .hero { position: relative; overflow: hidden; border-bottom: 1px solid var(--border); }
+  #neural-bg { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.8; }
+  .hero-inner {
+    position: relative; display: grid; grid-template-columns: 1.5fr 1fr;
+    gap: 48px; align-items: center; padding-top: 72px; padding-bottom: 80px;
+  }
+  .kicker { color: var(--muted); font-size: 0.8rem; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .pulse-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: pulse 2s ease-in-out infinite; }
+  @keyframes pulse { 50% { opacity: 0.3; box-shadow: 0 0 0 6px rgba(78,240,195,0.08); } }
+  h1 { font-size: clamp(2rem, 5vw, 3.2rem); margin-bottom: 12px; }
+  .name { color: var(--accent); }
+  .tagline { color: var(--muted); font-size: 1.05rem; max-width: 520px; margin-bottom: 28px; }
+
+  .terminal { background: #070b11; border: 1px solid var(--border-bright); border-radius: 10px; overflow: hidden; box-shadow: 0 16px 48px rgba(0,0,0,0.5); }
+  .term-bar { display: flex; align-items: center; gap: 7px; padding: 10px 14px; background: var(--bg-raised); border-bottom: 1px solid var(--border); }
+  .dot { width: 11px; height: 11px; border-radius: 50%; }
+  .dot.red { background: #ff5f57; } .dot.yellow { background: #febc2e; } .dot.green { background: #28c840; }
+  .term-title { margin-left: 8px; font-size: 0.72rem; color: var(--muted); }
+  .term-body { padding: 16px; font-size: 0.82rem; min-height: 190px; }
+  .term-body :global(p) { margin: 0 0 2px; }
+  .term-body :global(.prompt) { color: var(--accent); }
+  .term-body :global(.out) { color: var(--muted); margin-bottom: 10px; }
+  .term-body :global(.cursor) { animation: blink 1s steps(1) infinite; color: var(--accent); }
+
+  .cta-row { display: flex; align-items: center; gap: 14px; margin-top: 28px; flex-wrap: wrap; }
+  .socials { display: flex; gap: 6px; margin-left: 4px; }
+  .social { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 8px; color: var(--muted); border: 1px solid transparent; transition: all 0.15s; }
+  .social:hover { color: var(--accent); border-color: var(--border-bright); transform: translateY(-2px); }
+  .social.soon { opacity: 0.32; cursor: default; }
+
+  .hero-right { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .photo-frame {
+    position: relative; width: min(260px, 60vw); aspect-ratio: 1;
+    border-radius: 18px; overflow: hidden;
+    border: 1px solid var(--border-bright);
+    background: var(--panel);
+    display: grid; place-items: center;
+    box-shadow: 0 0 0 6px rgba(78, 240, 195, 0.05), 0 20px 60px rgba(0,0,0,0.5);
+  }
+  .photo-frame img { width: 100%; height: 100%; object-fit: cover; }
+  .photo-caption { font-size: 0.72rem; }
+
+  @media (max-width: 860px) {
+    .hero-inner { grid-template-columns: 1fr; gap: 32px; }
+    .hero-right { order: -1; }
+    .photo-frame { width: min(180px, 50vw); }
+  }
+</style>

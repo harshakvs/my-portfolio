@@ -1,0 +1,48 @@
+---
+import { projects } from '../data/projects';
+
+const statusLabel = { shipped: '● shipped', building: '◐ building in public', planned: '○ planned' };
+---
+<section id="projects" class="section">
+  <div class="container">
+    <h2 class="section-title">ls ./projects</h2>
+    <p class="section-sub">
+      Production systems I've shipped, plus what I'm building in public right now.
+      The <span class="mono" style="color: var(--amber)">◐ building</span> ones get repos and write-ups as they land.
+    </p>
+    <div class="grid">
+      {projects.map((p) => (
+        <article class={`card project ${p.status}`}>
+          <div class="head">
+            <span class={`status mono ${p.status}`}>{statusLabel[p.status]}</span>
+          </div>
+          <h3>{p.title}</h3>
+          <p class="summary">{p.summary}</p>
+          <div class="metrics mono">
+            {p.metrics.map((m) => <span class="metric">▸ {m}</span>)}
+          </div>
+          <div class="foot">
+            <div class="tags">{p.tags.map((t) => <span class="tag">{t}</span>)}</div>
+            {p.github && <a class="btn code-btn" href={p.github} target="_blank" rel="noopener">view code</a>}
+          </div>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 20px; }
+  .project { display: flex; flex-direction: column; gap: 12px; }
+  .project.building { border-color: rgba(255, 196, 107, 0.25); }
+  .status { font-size: 0.7rem; letter-spacing: 0.05em; }
+  .status.shipped { color: var(--accent); }
+  .status.building { color: var(--amber); }
+  .status.planned { color: var(--muted); }
+  h3 { font-size: 1.02rem; }
+  .summary { color: var(--muted); font-size: 0.88rem; flex-grow: 1; }
+  .metrics { display: flex; flex-direction: column; gap: 3px; font-size: 0.76rem; color: var(--accent2); }
+  .foot { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .code-btn { font-size: 0.75rem; padding: 6px 12px; flex-shrink: 0; }
+</style>

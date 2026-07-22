@@ -1,0 +1,138 @@
+---
+import { profile } from '../data/profile';
+---
+<div id="sprite-zone" aria-hidden="true" data-facts={JSON.stringify(profile.avatarFacts)}>
+  <div id="sprite-bubble" class="mono" hidden></div>
+  <canvas id="sprite" width="16" height="18" title="click me"></canvas>
+</div>
+
+<script>
+  const zone = document.getElementById('sprite-zone')!;
+  const bubble = document.getElementById('sprite-bubble')!;
+  const canvas = document.getElementById('sprite') as HTMLCanvasElement;
+  const ctx = canvas.getContext('2d')!;
+  const facts: string[] = JSON.parse((zone as HTMLElement).dataset.facts!);
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // 16x18 pixel robot, two walk frames. Legend: .=empty d=dark b=body e=eye a=accent
+  const F = (s: string) => s.trim().split('\n').map((r) => r.trim());
+  const frames = [
+    F(`
+      .......aa.......
+      .......aa.......
+      ......dddd......
+      ....dddddddd....
+      ...dbbbbbbbbd...
+      ...dbeebbeebd...
+      ...dbbbbbbbbd...
+      ...dbbaaaabbd...
+      ....dddddddd....
+      ..add......dda..
+      ..a.dbbbbbbd.a..
+      ....dbbbbbbd....
+      ....dbbbbbbd....
+      .....dddddd.....
+      .....db..bd.....
+      .....db..bd.....
+      ....ddd..ddd....
+      ................
+    `),
+    F(`
+      .......aa.......
+      .......aa.......
+      ......dddd......
+      ....dddddddd....
+      ...dbbbbbbbbd...
+      ...dbeebbeebd...
+      ...dbbbbbbbbd...
+      ...dbbaaaabbd...
+      ....dddddddd....
+      ..add......dda..
+      ..a.dbbbbbbd.a..
+      ....dbbbbbbd....
+      ....dbbbbbbd....
+      .....dddddd.....
+      ....db....bd....
+      ...db......bd...
+      ..ddd......ddd..
+      ................
+    `),
+  ];
+  const colors: Record<string, string> = { d: '#12324a', b: '#4ef0c3', e: '#07110d', a: '#58b8ff' };
+
+  function draw(frame: number) {
+    ctx.clearRect(0, 0, 16, 18);
+    frames[frame].forEach((row, y) => {
+      [...row].forEach((ch, x) => {
+        if (colors[ch]) { ctx.fillStyle = colors[ch]; ctx.fillRect(x, y, 1, 1); }
+      });
+    });
+  }
+  draw(0);
+
+  let x = 80, dir = 1, walking = true, frame = 0, tick = 0;
+  let factIdx = Math.floor(Math.random() * facts.length);
+  let bubbleTimer: ReturnType<typeof setTimeout>;
+
+  function say(text: string, ms = 6000) {
+    bubble.textContent = text;
+    bubble.hidden = false;
+    positionBubble();
+    clearTimeout(bubbleTimer);
+    bubbleTimer = setTimeout(() => (bubble.hidden = true), ms);
+  }
+  function positionBubble() {
+    const bw = bubble.offsetWidth;
+    bubble.style.left = Math.max(8, Math.min(innerWidth - bw - 8, x - bw / 2 + 24)) + 'px';
+  }
+  function nextFact() {
+    factIdx = (factIdx + 1) % facts.length;
+    say(facts[factIdx]);
+  }
+
+  canvas.style.pointerEvents = 'auto';
+  canvas.addEventListener('click', () => { walking = false; nextFact(); setTimeout(() => (walking = true), 3000); });
+
+  if (reduced) {
+    // No roaming: park in the corner, still clickable for facts
+    x = innerWidth - 80;
+    canvas.style.left = x + 'px';
+  } else {
+    setInterval(() => {
+      tick++;
+      if (walking) {
+        x += dir * 0.9;
+        if (x > innerWidth - 64) dir = -1;
+        if (x < 16) dir = 1;
+        if (Math.random() < 0.004) { walking = false; setTimeout(() => (walking = true), 1800 + Math.random() * 2500); }
+        if (tick % 12 === 0) { frame = 1 - frame; draw(frame); }
+      } else if (frame !== 0) { frame = 0; draw(0); }
+      canvas.style.left = x + 'px';
+      canvas.style.transform = `scaleX(${dir})`;
+      if (!bubble.hidden) positionBubble();
+    }, 1000 / 60);
+    // Occasional unprompted commentary
+    setInterval(() => { if (bubble.hidden && Math.random() < 0.5) nextFact(); }, 14000);
+    setTimeout(nextFact, 3500);
+  }
+</script>
+
+<style>
+  #sprite-zone { position: fixed; bottom: 0; left: 0; right: 0; height: 0; z-index: 60; pointer-events: none; }
+  #sprite {
+    position: fixed; bottom: 2px; left: 80px;
+    width: 48px; height: 54px;
+    image-rendering: pixelated;
+    cursor: pointer;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));
+  }
+  #sprite-bubble {
+    position: fixed; bottom: 64px;
+    max-width: 300px;
+    background: var(--panel); color: var(--text);
+    border: 1px solid var(--border-bright); border-radius: 10px 10px 10px 2px;
+    padding: 10px 14px; font-size: 0.72rem; line-height: 1.5;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    pointer-events: none;
+  }
+</style>

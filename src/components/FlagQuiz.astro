@@ -1,0 +1,183 @@
+---
+// flag_rush: 10 flags, 4 choices, clock running. House record is the boss fight.
+---
+<div class="quiz card">
+  <div class="quiz-head mono">
+    <span class="title">game 02: flag_rush 🏁</span>
+    <span class="record muted">house record: <b>10/10 · 24.5s</b> (harsha)</span>
+  </div>
+
+  <div id="fq-start" class="fq-screen">
+    <p class="pitch">I'm <em>unreasonably</em> good at flags. 10 flags, 4 choices each, timer running.
+      Beat my score and I owe you a reply to any email within the hour.</p>
+    <button id="fq-play" class="btn btn-primary">start quiz</button>
+    <p id="fq-best" class="mono muted best"></p>
+  </div>
+
+  <div id="fq-game" class="fq-screen" hidden>
+    <div class="fq-bar mono">
+      <span id="fq-progress">1/10</span>
+      <span id="fq-timer">0.0s</span>
+    </div>
+    <div class="fq-flag-wrap">
+      <img id="fq-flag" alt="Mystery flag" width="240" height="160" />
+    </div>
+    <div id="fq-options"></div>
+  </div>
+
+  <div id="fq-end" class="fq-screen" hidden>
+    <p id="fq-result" class="mono result"></p>
+    <p id="fq-verdict" class="verdict"></p>
+    <div class="fq-actions">
+      <button id="fq-again" class="btn">run it back</button>
+      <a id="fq-flex" class="btn btn-primary" hidden>📧 email me proof</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  type C = [string, string, string]; // [iso2, name, continent]
+  const COUNTRIES: C[] = [
+    ['us','United States','NA'],['ca','Canada','NA'],['mx','Mexico','NA'],['cu','Cuba','NA'],['jm','Jamaica','NA'],
+    ['br','Brazil','SA'],['ar','Argentina','SA'],['cl','Chile','SA'],['co','Colombia','SA'],['pe','Peru','SA'],
+    ['uy','Uruguay','SA'],['bo','Bolivia','SA'],['ve','Venezuela','SA'],['py','Paraguay','SA'],['ec','Ecuador','SA'],
+    ['gb','United Kingdom','EU'],['fr','France','EU'],['de','Germany','EU'],['it','Italy','EU'],['es','Spain','EU'],
+    ['pt','Portugal','EU'],['nl','Netherlands','EU'],['be','Belgium','EU'],['ch','Switzerland','EU'],['at','Austria','EU'],
+    ['se','Sweden','EU'],['no','Norway','EU'],['dk','Denmark','EU'],['fi','Finland','EU'],['is','Iceland','EU'],
+    ['ie','Ireland','EU'],['pl','Poland','EU'],['cz','Czechia','EU'],['gr','Greece','EU'],['hu','Hungary','EU'],
+    ['ro','Romania','EU'],['bg','Bulgaria','EU'],['hr','Croatia','EU'],['si','Slovenia','EU'],['sk','Slovakia','EU'],
+    ['ua','Ukraine','EU'],['ee','Estonia','EU'],['lv','Latvia','EU'],['lt','Lithuania','EU'],['lu','Luxembourg','EU'],
+    ['in','India','AS'],['cn','China','AS'],['jp','Japan','AS'],['kr','South Korea','AS'],['th','Thailand','AS'],
+    ['vn','Vietnam','AS'],['id','Indonesia','AS'],['my','Malaysia','AS'],['sg','Singapore','AS'],['ph','Philippines','AS'],
+    ['bd','Bangladesh','AS'],['pk','Pakistan','AS'],['lk','Sri Lanka','AS'],['np','Nepal','AS'],['mm','Myanmar','AS'],
+    ['kh','Cambodia','AS'],['la','Laos','AS'],['mn','Mongolia','AS'],['kz','Kazakhstan','AS'],['uz','Uzbekistan','AS'],
+    ['ae','UAE','AS'],['sa','Saudi Arabia','AS'],['qa','Qatar','AS'],['il','Israel','AS'],['tr','Türkiye','AS'],
+    ['ir','Iran','AS'],['iq','Iraq','AS'],['jo','Jordan','AS'],['lb','Lebanon','AS'],['om','Oman','AS'],
+    ['za','South Africa','AF'],['ng','Nigeria','AF'],['eg','Egypt','AF'],['ke','Kenya','AF'],['gh','Ghana','AF'],
+    ['ma','Morocco','AF'],['dz','Algeria','AF'],['tn','Tunisia','AF'],['et','Ethiopia','AF'],['tz','Tanzania','AF'],
+    ['ug','Uganda','AF'],['sn','Senegal','AF'],['ci','Ivory Coast','AF'],['cm','Cameroon','AF'],['zw','Zimbabwe','AF'],
+    ['au','Australia','OC'],['nz','New Zealand','OC'],['fj','Fiji','OC'],['pg','Papua New Guinea','OC'],['ws','Samoa','OC'],
+  ];
+  const HOUSE = { score: 10, time: 24.5 };
+  const ROUNDS = 10;
+
+  const $ = (id: string) => document.getElementById(id)!;
+  const screens = { start: $('fq-start'), game: $('fq-game'), end: $('fq-end') };
+  const show = (name: keyof typeof screens) =>
+    Object.entries(screens).forEach(([k, el]) => (el.hidden = k !== name));
+
+  const flagUrl = (code: string) => `https://flagcdn.com/w320/${code}.png`;
+  const shuffle = <T,>(a: T[]) => a.map((v) => [Math.random(), v] as const).sort((x, y) => x[0] - y[0]).map(([, v]) => v);
+
+  let quiz: C[] = [], round = 0, score = 0, t0 = 0, elapsed = 0, timerId: number;
+
+  function showBest() {
+    const best = localStorage.getItem('fq-best');
+    $('fq-best').textContent = best ? `your best: ${best}` : '';
+  }
+  showBest();
+
+  function start() {
+    quiz = shuffle(COUNTRIES).slice(0, ROUNDS);
+    round = 0; score = 0; t0 = performance.now();
+    show('game');
+    timerId = window.setInterval(() => {
+      elapsed = (performance.now() - t0) / 1000;
+      $('fq-timer').textContent = elapsed.toFixed(1) + 's';
+    }, 100);
+    ask();
+  }
+
+  function ask() {
+    const answer = quiz[round];
+    $('fq-progress').textContent = `${round + 1}/${ROUNDS}`;
+    ($('fq-flag') as HTMLImageElement).src = flagUrl(answer[0]);
+    // Prefer same-continent distractors — that's where the game gets evil
+    const sameCont = shuffle(COUNTRIES.filter((c) => c[2] === answer[2] && c[0] !== answer[0])).slice(0, 3);
+    const pool = sameCont.length >= 3 ? sameCont : shuffle(COUNTRIES.filter((c) => c[0] !== answer[0])).slice(0, 3);
+    const options = shuffle([answer, ...pool]);
+    const box = $('fq-options');
+    box.innerHTML = '';
+    for (const opt of options) {
+      const b = document.createElement('button');
+      b.className = 'fq-opt mono';
+      b.textContent = opt[1];
+      b.onclick = () => pick(b, opt, answer);
+      box.appendChild(b);
+    }
+  }
+
+  function pick(btn: HTMLButtonElement, opt: C, answer: C) {
+    document.querySelectorAll<HTMLButtonElement>('.fq-opt').forEach((b) => {
+      b.disabled = true;
+      if (b.textContent === answer[1]) b.classList.add('right');
+    });
+    if (opt[0] === answer[0]) { score++; } else { btn.classList.add('wrong'); }
+    setTimeout(() => {
+      round++;
+      round < ROUNDS ? ask() : finish();
+    }, 650);
+  }
+
+  function finish() {
+    clearInterval(timerId);
+    elapsed = (performance.now() - t0) / 1000;
+    show('end');
+    const line = `${score}/${ROUNDS} · ${elapsed.toFixed(1)}s`;
+    $('fq-result').textContent = `your run: ${line}   |   harsha: ${HOUSE.score}/${ROUNDS} · ${HOUSE.time}s`;
+    const beat = score > HOUSE.score || (score === HOUSE.score && elapsed < HOUSE.time);
+    const verdict = $('fq-verdict');
+    const flex = $('fq-flex') as HTMLAnchorElement;
+    if (beat) {
+      verdict.textContent = '🏆 You actually beat him. He will be insufferable about a rematch.';
+      flex.hidden = false;
+      flex.href = `mailto:sreeharshakotta@gmail.com?subject=I%20beat%20you%20at%20flag_rush&body=${encodeURIComponent(`Proof: ${line}. Your move.`)}`;
+    } else if (score === HOUSE.score) {
+      verdict.textContent = '⚡ Perfect score, but the clock says harsha keeps the crown. So close.';
+      flex.hidden = true;
+    } else {
+      verdict.textContent = score >= 7 ? '👏 Respectable. The house record survives another day.' : '🫡 The flags won this round. Run it back.';
+      flex.hidden = true;
+    }
+    const prevBest = localStorage.getItem('fq-best');
+    const prevScore = prevBest ? parseInt(prevBest) : -1;
+    if (score > prevScore) localStorage.setItem('fq-best', line);
+    showBest();
+  }
+
+  $('fq-play').addEventListener('click', start);
+  $('fq-again').addEventListener('click', () => { showBest(); start(); });
+</script>
+
+<style>
+  .quiz { margin-top: 24px; padding: 24px; }
+  .quiz-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+  .quiz-head .title { color: var(--accent); font-size: 0.9rem; }
+  .quiz-head .record { font-size: 0.74rem; }
+  .quiz-head b { color: var(--amber); }
+
+  .fq-screen { text-align: center; }
+  .pitch { color: var(--muted); font-size: 0.92rem; max-width: 480px; margin: 0 auto 20px; }
+  .pitch em { color: var(--accent); font-style: normal; }
+  .best { margin-top: 14px; font-size: 0.75rem; }
+
+  .fq-bar { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--muted); margin-bottom: 14px; }
+  #fq-timer { color: var(--amber); }
+  .fq-flag-wrap { margin-bottom: 18px; }
+  #fq-flag { border-radius: 6px; border: 1px solid var(--border-bright); box-shadow: 0 10px 32px rgba(0,0,0,0.5); max-width: 100%; height: auto; }
+  #fq-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-width: 480px; margin: 0 auto; }
+  :global(.fq-opt) {
+    padding: 11px 14px; font-size: 0.8rem; cursor: pointer;
+    background: var(--bg-raised); color: var(--text);
+    border: 1px solid var(--border-bright); border-radius: 8px;
+    transition: border-color 0.12s, background 0.12s;
+  }
+  :global(.fq-opt:hover:not(:disabled)) { border-color: var(--accent); }
+  :global(.fq-opt.right) { background: rgba(78, 240, 195, 0.18); border-color: var(--accent); color: var(--accent); }
+  :global(.fq-opt.wrong) { background: rgba(255, 107, 107, 0.15); border-color: #ff6b6b; color: #ff6b6b; }
+
+  .result { font-size: 0.85rem; color: var(--text); margin-bottom: 10px; }
+  .verdict { color: var(--muted); margin-bottom: 20px; }
+  .fq-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  @media (max-width: 520px) { #fq-options { grid-template-columns: 1fr; } }
+</style>

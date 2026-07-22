@@ -1,0 +1,161 @@
+---
+// sk-bot: fully client-side retrieval over resume facts. No API keys, no backend.
+// Swap `respond()` for a fetch() to a serverless LLM endpoint later if wanted.
+---
+<button id="chat-toggle" class="mono" aria-label="Open chat">
+  <span class="chat-icon">&gt;_</span>
+</button>
+
+<div id="chat-panel" class="mono" hidden>
+  <div class="chat-head">
+    <span><span class="dot"></span> sk-bot v0.1</span>
+    <button id="chat-close" aria-label="Close chat">✕</button>
+  </div>
+  <div id="chat-log">
+    <div class="msg bot">Hi! I'm <b>sk-bot</b> — a tiny retrieval bot that knows Sreeharsha's resume by heart. Zero API calls, runs entirely in your browser. Ask me anything about him.</div>
+  </div>
+  <div id="chat-chips">
+    <button data-q="What's his experience?">experience</button>
+    <button data-q="What are his top skills?">skills</button>
+    <button data-q="Tell me about his projects">projects</button>
+    <button data-q="How do I contact him?">contact</button>
+  </div>
+  <form id="chat-form">
+    <span class="prompt">$</span>
+    <input id="chat-input" type="text" placeholder="ask about experience, skills, gpus…" autocomplete="off" maxlength="200" />
+  </form>
+</div>
+
+<script>
+  type Entry = { keys: string[]; answer: string };
+  const KB: Entry[] = [
+    { keys: ['experience', 'work', 'career', 'years', 'background', 'history'],
+      answer: '5+ years shipping production ML: currently Senior ML Engineer at Vinci Education (real-time edge video AI), before that Graduate Research Assistant at Georgia State, and Data Scientist at HP for 2 years. Full story in the resume — grab it from the top nav.' },
+    { keys: ['current', 'vinci', 'now', 'today', 'edge', 'camera', 'video'],
+      answer: 'At Vinci Education he leads a real-time detection platform: 100+ edge devices, 600+ cameras, on-device inference with MicroK8s + AWS EKS in the cloud. YOLO, pose estimation, 3D CNNs, temporal transformers, and VLMs for semantic video search.' },
+    { keys: ['hp', 'hewlett', 'packard', 'forecast', 'demand'],
+      answer: 'At HP he built time-series forecasting on Azure Databricks that hit 89% accuracy and saved ~$26M in spare-parts overstock, plus an NLP/LLM recommendation engine that cut agent wait time to 15 seconds.' },
+    { keys: ['skill', 'stack', 'technology', 'technologies', 'tools', 'language'],
+      answer: 'Python, SQL, PySpark, Scala, R · PyTorch, TensorFlow, HuggingFace, LangChain · K8s (MicroK8s/EKS), Helm, ArgoCD, SageMaker Pipelines, GitLab CI · AWS + Azure · Prometheus/Grafana/Loki. The Pipeline section shows how they fit together.' },
+    { keys: ['gpu', 'cuda', 'inference', 'latency', 'fast', 'optimize', 'performance'],
+      answer: 'Inference engineering is his thing: he cut a video pipeline\'s end-to-end latency from 6–7s to under 2s at 25 FPS via GPU batching, pipeline-stage optimization, and threshold tuning. Currently going deeper with custom CUDA kernels — see "CUDA Inference Engineering" in projects.' },
+    { keys: ['llm', 'gpt', 'transformer', 'genai', 'language model', 'vlm'],
+      answer: 'He\'s worked with LLMs/VLMs in production (semantic video search, scene description, classifying millions of tweets) and is currently building a GPT from scratch — tokenizer to KV cache — as a public build log.' },
+    { keys: ['mlops', 'pipeline', 'deploy', 'kubernetes', 'k8s', 'ci', 'retrain', 'drift'],
+      answer: 'MLOps résumé highlights: SageMaker Pipelines with CI gating tests, model registry/versioning, monthly auto-retraining with drift detection, GitOps deploys via Helm+ArgoCD to 100+ edge devices, and site onboarding cut from ~7 hours to under 30 minutes.' },
+    { keys: ['education', 'degree', 'university', 'school', 'gpa', 'master'],
+      answer: 'M.S. in Analytics (Data Science) from Georgia State University — 4.0 GPA. B.Tech in Computer Science from Shiv Nadar University with a minor in Management.' },
+    { keys: ['project', 'portfolio', 'built', 'building'],
+      answer: 'Scroll up to ./projects — highlights: the edge video platform (600+ cameras), auto-retraining MLOps loops, GPT from scratch, CUDA inference engineering, and $26M-saving demand forecasting at HP.' },
+    { keys: ['contact', 'email', 'reach', 'hire', 'hiring', 'role', 'job', 'recruit', 'interview'],
+      answer: 'He\'s open to AI/ML engineer roles! Email sreeharshakotta@gmail.com (fastest, <24h response), or LinkedIn: linkedin.com/in/sreeharsha-kvs. Resume link is in the top nav.' },
+    { keys: ['resume', 'cv', 'pdf'], answer: 'Click resume.pdf in the top nav — one click, no forms.' },
+    { keys: ['paper', 'publication', 'research', 'ieee'],
+      answer: 'He published "Object and Currency Detection with Audio Feedback for Visually Impaired" at IEEE TENSYMP 2020, and supply-chain NLP research at Georgia State\'s Institute of Insight.' },
+    { keys: ['youtube', 'medium', 'blog', 'article', 'writing', 'video'],
+      answer: 'Articles ship here first (see writing.log above), then Medium. YouTube channel is in the works — pipeline deep-dives and GPT-from-scratch builds are on the roadmap.' },
+    { keys: ['you', 'bot', 'who are you', 'what are you', 'how do you work'],
+      answer: 'I\'m ~80 lines of keyword-retrieval JavaScript — no LLM, no API, no data leaves your browser. Sreeharsha builds the real thing; I\'m the demo that fits in a static site.' },
+    { keys: ['hello', 'hi', 'hey', 'yo', 'sup'],
+      answer: 'Hey! Ask me about his experience, skills, GPU work, or how to hire him.' },
+    { keys: ['joke', 'funny', 'fun fact'],
+      answer: 'Why did the model break up with the dataset? Too many issues with commitment... to memory. (His actual fun facts are better — click the robot walking around down there.)' },
+    { keys: ['game', 'play', 'arcade', 'flag', 'quiz'],
+      answer: 'Two games in the arcade: Gradient Descent (be the optimizer) and flag_rush — he claims a 10/10 in 24.5s house record at flags. Beat it and there\'s a prize.' },
+    { keys: ['travel', 'map', 'place', 'countries', 'visited', 'from', 'india'],
+      answer: 'Check the travel map below the arcade — he\'s lived across India (Delhi NCR, Bengaluru, Chennai) and the US (Atlanta, DC area), with more pins landing as the log grows.' },
+  ];
+
+  const log = document.getElementById('chat-log')!;
+  const form = document.getElementById('chat-form') as HTMLFormElement;
+  const input = document.getElementById('chat-input') as HTMLInputElement;
+  const panel = document.getElementById('chat-panel')!;
+  const toggle = document.getElementById('chat-toggle')!;
+
+  toggle.addEventListener('click', () => { panel.hidden = !panel.hidden; if (!panel.hidden) input.focus(); });
+  document.getElementById('chat-close')!.addEventListener('click', () => (panel.hidden = true));
+
+  function respond(q: string): string {
+    const lq = q.toLowerCase();
+    let best: Entry | null = null, bestScore = 0;
+    for (const e of KB) {
+      const score = e.keys.reduce((s, k) => s + (lq.includes(k) ? (k.includes(' ') ? 2 : 1) : 0), 0);
+      if (score > bestScore) { bestScore = score; best = e; }
+    }
+    return best
+      ? best.answer
+      : "Hmm, that's beyond my retrieval skills (I'm keyword search in a trench coat). Try: experience · skills · projects · gpu · contact — or email the human: sreeharshakotta@gmail.com";
+  }
+
+  function addMsg(text: string, who: 'user' | 'bot') {
+    const div = document.createElement('div');
+    div.className = `msg ${who}`;
+    div.textContent = text;
+    log.appendChild(div);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  function ask(q: string) {
+    addMsg(q, 'user');
+    setTimeout(() => addMsg(respond(q), 'bot'), 350 + Math.random() * 400);
+  }
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const q = input.value.trim();
+    if (!q) return;
+    input.value = '';
+    ask(q);
+  });
+
+  document.querySelectorAll<HTMLButtonElement>('#chat-chips button').forEach((b) =>
+    b.addEventListener('click', () => ask(b.dataset.q!))
+  );
+</script>
+
+<style>
+  #chat-toggle {
+    position: fixed; bottom: 24px; right: 24px; z-index: 90;
+    width: 54px; height: 54px; border-radius: 14px;
+    background: var(--accent); color: #04241a; border: none;
+    font-size: 1.1rem; font-weight: 700; cursor: pointer;
+    box-shadow: 0 8px 28px rgba(78, 240, 195, 0.35);
+    transition: transform 0.15s;
+  }
+  #chat-toggle:hover { transform: translateY(-3px) scale(1.05); }
+
+  #chat-panel {
+    position: fixed; bottom: 92px; right: 24px; z-index: 95;
+    width: min(360px, calc(100vw - 48px));
+    background: var(--bg-raised);
+    border: 1px solid var(--border-bright); border-radius: 14px;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .chat-head {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 16px; border-bottom: 1px solid var(--border);
+    font-size: 0.8rem; color: var(--accent);
+  }
+  .chat-head .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); margin-right: 4px; animation: blink 2s steps(1) infinite; }
+  #chat-close { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.9rem; }
+  #chat-close:hover { color: var(--text); }
+
+  #chat-log { height: 300px; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+  .msg { max-width: 85%; padding: 9px 13px; border-radius: 10px; font-size: 0.76rem; line-height: 1.55; white-space: pre-wrap; overflow-wrap: break-word; }
+  .msg.bot { background: var(--panel); border: 1px solid var(--border); align-self: flex-start; border-bottom-left-radius: 2px; }
+  .msg.user { background: var(--accent-dim); color: var(--accent); align-self: flex-end; border-bottom-right-radius: 2px; }
+
+  #chat-chips { display: flex; gap: 6px; padding: 0 14px 10px; flex-wrap: wrap; }
+  #chat-chips button {
+    font-family: var(--font-mono); font-size: 0.68rem;
+    background: none; border: 1px solid var(--border-bright); border-radius: 99px;
+    color: var(--muted); padding: 3px 11px; cursor: pointer;
+  }
+  #chat-chips button:hover { color: var(--accent); border-color: var(--accent); }
+
+  #chat-form { display: flex; align-items: center; gap: 8px; padding: 12px 14px; border-top: 1px solid var(--border); }
+  #chat-form .prompt { color: var(--accent); font-size: 0.85rem; }
+  #chat-input { flex: 1; background: none; border: none; outline: none; color: var(--text); font-family: var(--font-mono); font-size: 0.78rem; }
+  #chat-input::placeholder { color: var(--muted); opacity: 0.6; }
+</style>

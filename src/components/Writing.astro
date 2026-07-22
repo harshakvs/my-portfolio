@@ -1,0 +1,48 @@
+---
+import { getCollection } from 'astro:content';
+import { url } from '../data/url';
+
+const posts = (await getCollection('blog')).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+---
+<section id="writing" class="section">
+  <div class="container">
+    <h2 class="section-title">tail -f writing.log</h2>
+    <p class="section-sub">
+      Notes from the trenches — inference engineering, pipelines, and building models from scratch.
+      Published here first, cross-posted to Medium.
+    </p>
+    <div class="posts">
+      {posts.map((post) => (
+        <a class="post card" href={post.data.status === 'published' ? url(`/blog/${post.id.replace(/\.md$/, '')}`) : undefined}>
+          <div class="meta mono">
+            {post.data.status === 'coming-soon'
+              ? <span class="soon">◐ in progress</span>
+              : <span class="date">{post.data.pubDate.toISOString().slice(0, 10)}</span>}
+            <span class="post-tags">{post.data.tags.slice(0, 3).map((t) => <span class="tag alt">{t}</span>)}</span>
+          </div>
+          <h3>{post.data.title}</h3>
+          <p class="desc">{post.data.description}</p>
+        </a>
+      ))}
+    </div>
+    <p class="mono all-link"><a href={url('/blog')}>cd ./writing --all →</a></p>
+  </div>
+</section>
+
+<style>
+  .posts { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px; }
+  .post { display: block; }
+  .post:hover { text-decoration: none; }
+  .post:not([href]) { opacity: 0.75; cursor: default; }
+  .post:not([href]):hover { transform: none; box-shadow: none; border-color: var(--border); }
+  .meta { display: flex; justify-content: space-between; align-items: center; font-size: 0.72rem; margin-bottom: 10px; }
+  .date { color: var(--muted); }
+  .soon { color: var(--amber); }
+  .post-tags { display: flex; gap: 5px; }
+  h3 { color: var(--text); font-size: 0.98rem; margin-bottom: 8px; }
+  .post[href]:hover h3 { color: var(--accent); }
+  .desc { color: var(--muted); font-size: 0.85rem; }
+  .all-link { margin-top: 28px; font-size: 0.85rem; }
+</style>

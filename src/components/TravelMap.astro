@@ -1,0 +1,99 @@
+---
+import { pins, pinStyle } from '../data/travel';
+
+const counts = {
+  lived: pins.filter((p) => p.type === 'lived').length,
+  visited: pins.filter((p) => p.type === 'visited').length,
+  wishlist: pins.filter((p) => p.type === 'wishlist').length,
+  countries: new Set(pins.filter((p) => p.type !== 'wishlist').map((p) => p.name.split(',').pop()!.trim())).size,
+};
+---
+<section id="travel" class="section">
+  <div class="container">
+    <h2 class="section-title">cat travel.geojson | render --dark</h2>
+    <p class="section-sub">
+      Coordinates I've occupied. Drag, zoom, click the pins — the log grows as I remember (and travel) more.
+    </p>
+    <div class="map-card card">
+      <div id="travel-map" data-pins={JSON.stringify(pins)} data-style={JSON.stringify(pinStyle)}></div>
+      <div class="map-stats mono">
+        <span>🏠 lived: <b>{counts.lived}</b></span>
+        <span>📍 visited: <b>{counts.visited}</b></span>
+        <span>✨ wishlist: <b>{counts.wishlist}</b></span>
+        <span>🌍 countries: <b>{counts.countries}</b></span>
+        <span class="muted hint">// more pins loading from memory…</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import L from 'leaflet';
+  import 'leaflet/dist/leaflet.css';
+
+  type Pin = { name: string; coords: [number, number]; type: string; note?: string; emoji?: string };
+  const el = document.getElementById('travel-map')!;
+  const pins: Pin[] = JSON.parse(el.dataset.pins!);
+  const style: Record<string, { emoji: string }> = JSON.parse(el.dataset.style!);
+
+  const map = L.map(el, {
+    center: [24, 20],
+    zoom: 2,
+    minZoom: 2,
+    maxZoom: 12,
+    worldCopyJump: true,
+    scrollWheelZoom: false, // don't hijack page scroll; click map to enable
+    attributionControl: true,
+  });
+  map.on('click', () => map.scrollWheelZoom.enable());
+  map.on('mouseout', () => map.scrollWheelZoom.disable());
+
+  // Dark basemap to match the theme (free CARTO tiles)
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    subdomains: 'abcd',
+  }).addTo(map);
+
+  for (const p of pins) {
+    const icon = L.divIcon({
+      className: 'travel-pin',
+      html: `<span class="pin-emoji pin-${p.type}">${style[p.type]?.emoji ?? '📍'}</span>`,
+      iconSize: [30, 30],
+      iconAnchor: [15, 26],
+    });
+    L.marker(p.coords, { icon })
+      .addTo(map)
+      .bindPopup(
+        `<div class="pin-pop"><b>${p.emoji ?? ''} ${p.name}</b>${p.note ? `<br><span>${p.note}</span>` : ''}<br><em>${p.type}</em></div>`
+      );
+  }
+</script>
+
+<style>
+  .map-card { padding: 12px; }
+  #travel-map { height: 440px; border-radius: 8px; background: #070b11; z-index: 1; }
+  .map-stats { display: flex; gap: 20px; flex-wrap: wrap; padding: 14px 8px 4px; font-size: 0.76rem; color: var(--muted); }
+  .map-stats b { color: var(--accent); }
+  .hint { margin-left: auto; font-size: 0.7rem; }
+
+  :global(.travel-pin) { background: none; border: none; }
+  :global(.pin-emoji) {
+    font-size: 22px; line-height: 1;
+    filter: drop-shadow(0 0 6px rgba(78, 240, 195, 0.55)) drop-shadow(0 2px 3px rgba(0, 0, 0, 0.6));
+    display: inline-block;
+    transition: transform 0.15s;
+  }
+  :global(.travel-pin:hover .pin-emoji) { transform: scale(1.35) translateY(-2px); }
+  :global(.leaflet-popup-content-wrapper) {
+    background: var(--panel); color: var(--text);
+    border: 1px solid var(--border-bright); border-radius: 10px;
+    font-family: var(--font-mono); font-size: 0.75rem;
+  }
+  :global(.leaflet-popup-tip) { background: var(--panel); }
+  :global(.pin-pop b) { color: var(--accent); }
+  :global(.pin-pop em) { color: var(--muted); }
+  :global(.leaflet-container) { font-family: var(--font-mono); }
+  :global(.leaflet-control-attribution) { background: rgba(10, 15, 22, 0.7) !important; color: var(--muted) !important; font-size: 0.6rem !important; }
+  :global(.leaflet-control-attribution a) { color: var(--accent2) !important; }
+  :global(.leaflet-bar a) { background: var(--panel) !important; color: var(--text) !important; border-color: var(--border) !important; }
+</style>

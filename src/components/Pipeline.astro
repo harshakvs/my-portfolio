@@ -1,0 +1,36 @@
+---
+import { pipelineStages } from '../data/projects';
+---
+<section id="pipeline" class="section">
+  <div class="container">
+    <h2 class="section-title">cat how_i_build.yaml</h2>
+    <p class="section-sub">
+      Skills, but honest: this is the pipeline every one of my projects moves through.
+      Each stage is something I've run in production, not just a keyword.
+    </p>
+    <div class="flow">
+      {pipelineStages.map((s, i) => (
+        <>
+          <div class="stage card">
+            <span class="idx mono">{String(i + 1).padStart(2, '0')}</span>
+            <h3 class="mono">{s.name}</h3>
+            <p class="desc">{s.desc}</p>
+            <p class="tools mono">{s.tools}</p>
+          </div>
+          {i < pipelineStages.length - 1 && <span class="arrow mono" aria-hidden="true">─▶</span>}
+        </>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .flow { display: flex; align-items: stretch; gap: 4px; overflow-x: auto; padding-bottom: 12px; scrollbar-width: thin; }
+  .stage { min-width: 172px; flex: 1; padding: 18px; position: relative; }
+  .stage:hover { border-color: var(--accent); }
+  .idx { position: absolute; top: 12px; right: 14px; font-size: 0.68rem; color: var(--border-bright); }
+  h3 { color: var(--accent); font-size: 0.95rem; margin-bottom: 4px; }
+  .desc { font-size: 0.8rem; color: var(--text); margin-bottom: 10px; }
+  .tools { font-size: 0.68rem; color: var(--muted); line-height: 1.7; }
+  .arrow { align-self: center; color: var(--border-bright); flex-shrink: 0; }
+</style>

@@ -1,0 +1,40 @@
+---
+import { profile } from '../data/profile';
+import { url } from '../data/url';
+---
+<section id="contact" class="section">
+  <div class="container">
+    <h2 class="section-title">./reach_out.sh</h2>
+    <p class="section-sub">
+      Hiring for an AI/ML engineering role? Want to talk shop about inference optimization,
+      edge deployments, or training pipelines? My inbox is open.
+    </p>
+    <div class="card contact-card">
+      <div class="left">
+        <p class="mono lead">
+          <span class="muted"># fastest path:</span><br />
+          mail -s <span class="str">"AI Engineer role"</span> {profile.email}
+        </p>
+        <div class="actions">
+          <a class="btn btn-primary" href={`mailto:${profile.email}?subject=AI%20Engineer%20role`}>email me</a>
+          <a class="btn" href={url(profile.resume)} target="_blank">resume.pdf</a>
+          <a class="btn" href={profile.socials[1].url} target="_blank" rel="noopener">linkedin</a>
+        </div>
+      </div>
+      <div class="right mono muted">
+        <p>response_time: <span class="ok">&lt; 24h</span></p>
+        <p>status: <span class="ok">open_to_roles</span></p>
+        <p>interests: [inference, mlops, llms, edge]</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .contact-card { display: flex; justify-content: space-between; gap: 32px; align-items: center; padding: 32px; flex-wrap: wrap; }
+  .lead { font-size: 0.9rem; margin-bottom: 20px; line-height: 1.9; }
+  .str { color: var(--amber); }
+  .actions { display: flex; gap: 12px; flex-wrap: wrap; }
+  .right { font-size: 0.78rem; line-height: 2; }
+  .ok { color: var(--accent); }
+</style>

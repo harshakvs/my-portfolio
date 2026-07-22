@@ -1,0 +1,166 @@
+---
+// Game 01: Gradient Descent. Game 02: flag_rush (FlagQuiz).
+import FlagQuiz from './FlagQuiz.astro';
+---
+<section id="arcade" class="section">
+  <div class="container">
+    <h2 class="section-title">python arcade.py --game gradient_descent</h2>
+    <p class="section-sub">
+      You are the optimizer. Tune the learning rate, step down the loss landscape, and find the
+      <em>global</em> minimum — without overshooting into the void. This is literally how neural networks learn.
+    </p>
+    <div class="game card">
+      <canvas id="gd-canvas" width="900" height="380"></canvas>
+      <div class="controls mono">
+        <label>
+          learning_rate: <span id="gd-lr-val" class="val">0.10</span>
+          <input type="range" id="gd-lr" min="-3" max="0.4" step="0.01" value="-1" />
+        </label>
+        <label class="check"><input type="checkbox" id="gd-momentum" /> momentum</label>
+        <button id="gd-step" class="btn">step()</button>
+        <button id="gd-auto" class="btn">auto-train</button>
+        <button id="gd-reset" class="btn">reset()</button>
+        <span id="gd-stats" class="stats muted">steps: 0 · loss: —</span>
+      </div>
+      <p id="gd-msg" class="mono msg"></p>
+    </div>
+    <FlagQuiz />
+  </div>
+</section>
+
+<script>
+  const canvas = document.getElementById('gd-canvas') as HTMLCanvasElement;
+  const ctx = canvas.getContext('2d')!;
+  const W = canvas.width, H = canvas.height;
+  const XMIN = -10, XMAX = 10;
+
+  // Loss landscape: parabola + waves = one global minimum among several local ones
+  const f = (x: number) => 0.045 * x * x + 1.15 * Math.sin(1.35 * x) + 1.6;
+  const df = (x: number) => (f(x + 1e-4) - f(x - 1e-4)) / 2e-4;
+
+  // Locate global minimum numerically
+  let gmin = XMIN;
+  for (let x = XMIN; x <= XMAX; x += 0.001) if (f(x) < f(gmin)) gmin = x;
+
+  const YMAX = Math.max(...Array.from({ length: 200 }, (_, i) => f(XMIN + (i * (XMAX - XMIN)) / 199))) + 0.4;
+  const YMIN = f(gmin) - 0.5;
+  const px = (x: number) => ((x - XMIN) / (XMAX - XMIN)) * W;
+  const py = (y: number) => H - 30 - ((y - YMIN) / (YMAX - YMIN)) * (H - 60);
+
+  let x = 0, v = 0, steps = 0, done = false, exploded = false;
+  let trail: number[] = [];
+  let auto: ReturnType<typeof setInterval> | null = null;
+
+  const lrSlider = document.getElementById('gd-lr') as HTMLInputElement;
+  const lrVal = document.getElementById('gd-lr-val')!;
+  const momentumBox = document.getElementById('gd-momentum') as HTMLInputElement;
+  const stats = document.getElementById('gd-stats')!;
+  const msg = document.getElementById('gd-msg')!;
+  const autoBtn = document.getElementById('gd-auto')!;
+  const lr = () => Math.pow(10, parseFloat(lrSlider.value));
+
+  function reset() {
+    // Start on a slope near a tempting local minimum
+    const starts = [-8.5, -6.5, 6, 8, 8.8];
+    x = starts[Math.floor(Math.random() * starts.length)];
+    v = 0; steps = 0; done = false; exploded = false; trail = [];
+    stopAuto();
+    msg.textContent = '';
+    msg.className = 'mono msg';
+    render();
+    updateStats();
+  }
+
+  function step() {
+    if (done || exploded) return;
+    const g = df(x);
+    if (momentumBox.checked) { v = 0.82 * v - lr() * g; x += v; }
+    else x -= lr() * g;
+    steps++;
+    trail.push(x);
+    if (trail.length > 40) trail.shift();
+
+    if (x < XMIN - 2 || x > XMAX + 2 || !isFinite(x)) {
+      exploded = true;
+      stopAuto();
+      msg.textContent = '💥 diverged! learning rate too high — your loss is now NaN. reset() and go smaller.';
+      msg.className = 'mono msg bad';
+    } else if (Math.abs(x - gmin) < 0.12 && Math.abs(df(x)) < 0.08) {
+      done = true;
+      stopAuto();
+      msg.textContent = `🎉 converged to the GLOBAL minimum in ${steps} steps! You are now a qualified optimizer.`;
+      msg.className = 'mono msg good';
+    } else if (Math.abs(df(x)) < 0.01 && Math.abs(x - gmin) >= 0.5 && steps > 4) {
+      msg.textContent = '😬 stuck in a local minimum. Classic. Try momentum, a bigger lr, or reset().';
+      msg.className = 'mono msg warn';
+    }
+    render();
+    updateStats();
+  }
+
+  function stopAuto() { if (auto) { clearInterval(auto); auto = null; autoBtn.textContent = 'auto-train'; } }
+
+  function updateStats() {
+    stats.textContent = `steps: ${steps} · loss: ${exploded ? 'NaN' : f(x).toFixed(3)} · target: ${f(gmin).toFixed(3)}`;
+  }
+
+  function render() {
+    ctx.clearRect(0, 0, W, H);
+    // grid
+    ctx.strokeStyle = 'rgba(28, 42, 61, 0.6)';
+    ctx.lineWidth = 1;
+    for (let gx = 0; gx < W; gx += 60) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, H); ctx.stroke(); }
+    for (let gy = 0; gy < H; gy += 60) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke(); }
+    // curve
+    ctx.strokeStyle = '#58b8ff'; ctx.lineWidth = 2.5; ctx.beginPath();
+    for (let i = 0; i <= 400; i++) {
+      const cx = XMIN + (i * (XMAX - XMIN)) / 400;
+      i === 0 ? ctx.moveTo(px(cx), py(f(cx))) : ctx.lineTo(px(cx), py(f(cx)));
+    }
+    ctx.stroke();
+    // global min marker
+    ctx.fillStyle = 'rgba(78, 240, 195, 0.5)';
+    ctx.font = '11px monospace';
+    ctx.fillText('global min ↓', px(gmin) - 34, py(f(gmin)) - 16);
+    // trail
+    trail.forEach((tx, i) => {
+      ctx.fillStyle = `rgba(255, 196, 107, ${(i / trail.length) * 0.5})`;
+      ctx.beginPath(); ctx.arc(px(tx), py(f(tx)), 4, 0, Math.PI * 2); ctx.fill();
+    });
+    // ball
+    if (!exploded) {
+      ctx.fillStyle = done ? '#4ef0c3' : '#ffc46b';
+      ctx.shadowColor = done ? '#4ef0c3' : '#ffc46b';
+      ctx.shadowBlur = 16;
+      ctx.beginPath(); ctx.arc(px(x), py(f(x)), 9, 0, Math.PI * 2); ctx.fill();
+      ctx.shadowBlur = 0;
+    }
+  }
+
+  lrSlider.addEventListener('input', () => (lrVal.textContent = lr().toFixed(lr() < 0.01 ? 3 : 2)));
+  document.getElementById('gd-step')!.addEventListener('click', step);
+  document.getElementById('gd-reset')!.addEventListener('click', reset);
+  autoBtn.addEventListener('click', () => {
+    if (auto) stopAuto();
+    else { auto = setInterval(step, 140); autoBtn.textContent = 'stop'; }
+  });
+
+  lrVal.textContent = lr().toFixed(2);
+  reset();
+</script>
+
+<style>
+  .game { padding: 20px; }
+  #gd-canvas { width: 100%; height: auto; border-radius: 8px; background: #070b11; border: 1px solid var(--border); }
+  .controls { display: flex; align-items: center; gap: 16px; margin-top: 16px; flex-wrap: wrap; font-size: 0.8rem; }
+  .controls label { display: flex; align-items: center; gap: 10px; color: var(--muted); }
+  .controls .val { color: var(--amber); min-width: 44px; }
+  .controls input[type='range'] { accent-color: var(--accent); width: 150px; }
+  .controls .check { gap: 6px; }
+  .controls .btn { font-size: 0.75rem; padding: 7px 14px; }
+  .stats { font-size: 0.75rem; margin-left: auto; }
+  .msg { margin-top: 12px; font-size: 0.8rem; min-height: 1.4em; }
+  .msg.good { color: var(--accent); }
+  .msg.bad { color: #ff6b6b; }
+  .msg.warn { color: var(--amber); }
+</style>
