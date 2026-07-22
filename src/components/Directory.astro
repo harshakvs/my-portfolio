@@ -1,0 +1,74 @@
+---
+import { getCollection } from 'astro:content';
+import { projects } from '../data/projects';
+import { visitedStates, pins } from '../data/travel';
+import { hobbies } from '../data/hobbies';
+import { url } from '../data/url';
+
+const posts = await getCollection('blog');
+const states = visitedStates.us.length + visitedStates.india.length;
+
+const dirs = [
+  {
+    href: '/projects', name: 'projects', emoji: '🚀',
+    desc: 'Production ML systems + public builds — edge video AI, MLOps, GPT from scratch',
+    stat: `${projects.length} entries`,
+  },
+  {
+    href: '/blog', name: 'writing', emoji: '✍️',
+    desc: 'Inference engineering, pipelines, and from-scratch builds — published here first',
+    stat: `${posts.length} posts`,
+  },
+  {
+    href: '/arcade', name: 'arcade', emoji: '🕹️',
+    desc: 'Play Gradient Descent, then try to beat my flag_rush record',
+    stat: '2 games',
+  },
+  {
+    href: '/travel', name: 'travel', emoji: '🗺️',
+    desc: `Shaded-state map of everywhere I've lived, trekked, and eaten`,
+    stat: `${states} states · ${pins.length} pins`,
+  },
+  {
+    href: '/hobbies', name: 'hobbies', emoji: '🏏',
+    desc: 'Cricket trophies, golf, PSG, Ferrari F1, and food worth travelling for',
+    stat: `${hobbies.length} obsessions`,
+  },
+  {
+    href: '/garden', name: 'garden', emoji: '🌱',
+    desc: 'Raw Obsidian notes in public — less polish, more honesty',
+    stat: 'growing',
+  },
+];
+---
+<section id="directory" class="section">
+  <div class="container">
+    <h2 class="section-title">ls -la ~/sreeharsha</h2>
+    <p class="section-sub">Pick a directory. Everything has its own page now.</p>
+    <div class="grid">
+      {dirs.map((d) => (
+        <a class="card dir" href={url(d.href)}>
+          <div class="row1">
+            <span class="emoji">{d.emoji}</span>
+            <span class="mono name">drwxr-xr-x <b>./{d.name}</b></span>
+          </div>
+          <p class="desc">{d.desc}</p>
+          <span class="mono stat">{d.stat} →</span>
+        </a>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px; }
+  .dir { display: flex; flex-direction: column; gap: 10px; }
+  .dir:hover { text-decoration: none; border-color: var(--accent); }
+  .row1 { display: flex; align-items: center; gap: 12px; }
+  .emoji { font-size: 1.5rem; }
+  .name { font-size: 0.8rem; color: var(--muted); }
+  .name b { color: var(--accent); font-weight: 500; }
+  .desc { color: var(--muted); font-size: 0.86rem; flex-grow: 1; }
+  .stat { font-size: 0.72rem; color: var(--accent2); }
+  .dir:hover .stat { color: var(--accent); }
+</style>
