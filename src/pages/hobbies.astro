@@ -1,0 +1,74 @@
+---
+import Base from '../layouts/Base.astro';
+import { hobbies } from '../data/hobbies';
+import { profile } from '../data/profile';
+import { url } from '../data/url';
+---
+<Base title={`Hobbies | ${profile.name}`} description="Cricket, golf, PSG, Ferrari F1, cooking, and travel — the human side of the pipeline.">
+  <main class="section">
+    <div class="container">
+      <h1 class="section-title">ls ./life --outside-work</h1>
+      <p class="section-sub">
+        Proof I step away from the terminal. Occasionally.
+      </p>
+      <div class="grid">
+        {hobbies.map((h) => (
+          <article class="card hobby">
+            <div class="head">
+              <span class="emoji">{h.emoji}</span>
+              <div>
+                <h2 class="mono">{h.title}</h2>
+                <span class="tag">{h.tag}</span>
+              </div>
+            </div>
+            <p class="blurb">{h.blurb}</p>
+            {h.images.length > 0 && (
+              <div class={`shots ${h.images.length > 1 ? 'two' : ''}`}>
+                {h.images.map((img) => (
+                  <figure class="shot scanlines">
+                    <img src={url(img.src)} alt={img.alt} loading="lazy" data-ph={img.src} />
+                    <figcaption class="mono">{img.caption}</figcaption>
+                  </figure>
+                ))}
+              </div>
+            )}
+            {h.link && <a class="btn mono" href={url(h.link.href)}>{h.link.label}</a>}
+          </article>
+        ))}
+      </div>
+    </div>
+  </main>
+</Base>
+
+<script>
+  // Until a photo exists at its path, swap it for a labeled drop-slot
+  document.querySelectorAll<HTMLImageElement>('.shot img').forEach((img) => {
+    img.addEventListener('error', () => {
+      const ph = document.createElement('div');
+      ph.className = 'placeholder mono';
+      ph.textContent = `drop photo → public${img.dataset.ph}`;
+      img.replaceWith(ph);
+    });
+  });
+</script>
+
+<style>
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+  .hobby { display: flex; flex-direction: column; gap: 14px; }
+  .head { display: flex; align-items: center; gap: 14px; }
+  .emoji { font-size: 2rem; filter: drop-shadow(0 0 12px rgba(78, 240, 195, 0.3)); }
+  h2 { font-size: 1.05rem; margin-bottom: 4px; }
+  .blurb { color: var(--muted); font-size: 0.88rem; flex-grow: 1; }
+  .shots { display: grid; gap: 10px; }
+  .shots.two { grid-template-columns: 1fr 1fr; }
+  .shot { position: relative; margin: 0; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); }
+  .shot img { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; }
+  .shot figcaption { position: absolute; bottom: 0; left: 0; right: 0; padding: 6px 10px; font-size: 0.65rem; color: var(--accent); background: linear-gradient(transparent, rgba(7, 11, 17, 0.9)); z-index: 1; }
+  :global(.placeholder) {
+    aspect-ratio: 4/3; display: grid; place-items: center; text-align: center;
+    border: 1px dashed var(--border-bright); border-radius: 8px;
+    color: var(--muted); font-size: 0.66rem; padding: 10px;
+    background: repeating-linear-gradient(45deg, transparent 0 12px, rgba(28, 42, 61, 0.25) 12px 24px);
+  }
+  .btn { align-self: flex-start; font-size: 0.78rem; }
+</style>

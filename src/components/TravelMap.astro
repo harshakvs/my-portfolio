@@ -1,27 +1,33 @@
 ---
-import { pins, pinStyle } from '../data/travel';
+import { pins, cityDots, visitedStates } from '../data/travel';
 
 const counts = {
   lived: pins.filter((p) => p.type === 'lived').length,
-  visited: pins.filter((p) => p.type === 'visited').length,
-  wishlist: pins.filter((p) => p.type === 'wishlist').length,
-  countries: new Set(pins.filter((p) => p.type !== 'wishlist').map((p) => p.name.split(',').pop()!.trim())).size,
+  treks: pins.filter((p) => p.type === 'trek').length,
+  cities: cityDots.length,
+  states: visitedStates.us.length + visitedStates.india.length,
 };
 ---
 <section id="travel" class="section">
   <div class="container">
     <h2 class="section-title">cat travel.geojson | render --dark</h2>
     <p class="section-sub">
-      Coordinates I've occupied. Drag, zoom, click the pins — the log grows as I remember (and travel) more.
+      Shaded states: covered. Big pins: lived there (or climbed it). Small dots: passed through and ate well.
+      Drag, zoom, click everything.
     </p>
     <div class="map-card card">
-      <div id="travel-map" data-pins={JSON.stringify(pins)} data-style={JSON.stringify(pinStyle)}></div>
+      <div
+        id="travel-map"
+        data-pins={JSON.stringify(pins)}
+        data-dots={JSON.stringify(cityDots)}
+        data-states={JSON.stringify(visitedStates)}
+      ></div>
       <div class="map-stats mono">
         <span>🏠 lived: <b>{counts.lived}</b></span>
-        <span>📍 visited: <b>{counts.visited}</b></span>
-        <span>✨ wishlist: <b>{counts.wishlist}</b></span>
-        <span>🌍 countries: <b>{counts.countries}</b></span>
-        <span class="muted hint">// more pins loading from memory…</span>
+        <span>🏔️ treks: <b>{counts.treks}</b></span>
+        <span>📍 cities: <b>{counts.cities}+</b></span>
+        <span>🗺️ states covered: <b>{counts.states}</b></span>
+        <span>🌍 countries: <b>2 (so far)</b></span>
       </div>
     </div>
   </div>
@@ -32,32 +38,67 @@ const counts = {
   import 'leaflet/dist/leaflet.css';
 
   type Pin = { name: string; coords: [number, number]; type: string; note?: string; emoji?: string };
+  const BASE = import.meta.env.BASE_URL.replace(/\/$/, '');
   const el = document.getElementById('travel-map')!;
   const pins: Pin[] = JSON.parse(el.dataset.pins!);
-  const style: Record<string, { emoji: string }> = JSON.parse(el.dataset.style!);
+  const dots: { name: string; coords: [number, number] }[] = JSON.parse(el.dataset.dots!);
+  const states: { us: string[]; india: string[] } = JSON.parse(el.dataset.states!);
 
   const map = L.map(el, {
-    center: [24, 20],
+    center: [28, 10],
     zoom: 2,
     minZoom: 2,
     maxZoom: 12,
     worldCopyJump: true,
-    scrollWheelZoom: false, // don't hijack page scroll; click map to enable
-    attributionControl: true,
+    scrollWheelZoom: false, // click map to enable, so page scroll isn't hijacked
   });
   map.on('click', () => map.scrollWheelZoom.enable());
   map.on('mouseout', () => map.scrollWheelZoom.disable());
 
-  // Dark basemap to match the theme (free CARTO tiles)
   L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
     subdomains: 'abcd',
   }).addTo(map);
 
+  // Shade visited states
+  const stateStyle = {
+    fillColor: '#4ef0c3',
+    fillOpacity: 0.13,
+    color: '#4ef0c3',
+    opacity: 0.4,
+    weight: 1,
+  };
+  async function shade(file: string, nameProp: string, visited: string[]) {
+    const geo = await (await fetch(`${BASE}/geo/${file}`)).json();
+    const wanted = new Set(visited);
+    L.geoJSON(geo, {
+      filter: (f) => wanted.has(f.properties[nameProp]),
+      style: () => stateStyle,
+      onEachFeature: (f, layer) => {
+        layer.bindTooltip(`✓ ${f.properties[nameProp]}`, { sticky: true, className: 'state-tip' });
+        layer.on('mouseover', () => (layer as L.Path).setStyle({ fillOpacity: 0.3 }));
+        layer.on('mouseout', () => (layer as L.Path).setStyle({ fillOpacity: 0.13 }));
+      },
+    }).addTo(map);
+  }
+  shade('us-states.json', 'name', states.us);
+  shade('india-states.json', 'st_nm', states.india);
+
+  // Visited-city dots
+  for (const d of dots) {
+    L.circleMarker(d.coords, {
+      radius: 4, color: '#58b8ff', weight: 1.5, fillColor: '#58b8ff', fillOpacity: 0.6,
+    })
+      .addTo(map)
+      .bindTooltip(d.name, { className: 'state-tip' });
+  }
+
+  // Lived / trek pins on top
+  const pinEmoji: Record<string, string> = { lived: '🏠', trek: '🏔️' };
   for (const p of pins) {
     const icon = L.divIcon({
       className: 'travel-pin',
-      html: `<span class="pin-emoji pin-${p.type}">${style[p.type]?.emoji ?? '📍'}</span>`,
+      html: `<span class="pin-emoji">${pinEmoji[p.type] ?? '📍'}</span>`,
       iconSize: [30, 30],
       iconAnchor: [15, 26],
     });
@@ -71,10 +112,9 @@ const counts = {
 
 <style>
   .map-card { padding: 12px; }
-  #travel-map { height: 440px; border-radius: 8px; background: #070b11; z-index: 1; }
+  #travel-map { height: 520px; border-radius: 8px; background: #070b11; z-index: 1; }
   .map-stats { display: flex; gap: 20px; flex-wrap: wrap; padding: 14px 8px 4px; font-size: 0.76rem; color: var(--muted); }
   .map-stats b { color: var(--accent); }
-  .hint { margin-left: auto; font-size: 0.7rem; }
 
   :global(.travel-pin) { background: none; border: none; }
   :global(.pin-emoji) {
@@ -84,11 +124,12 @@ const counts = {
     transition: transform 0.15s;
   }
   :global(.travel-pin:hover .pin-emoji) { transform: scale(1.35) translateY(-2px); }
-  :global(.leaflet-popup-content-wrapper) {
-    background: var(--panel); color: var(--text);
-    border: 1px solid var(--border-bright); border-radius: 10px;
+  :global(.leaflet-popup-content-wrapper), :global(.state-tip) {
+    background: var(--panel) !important; color: var(--text) !important;
+    border: 1px solid var(--border-bright) !important; border-radius: 10px;
     font-family: var(--font-mono); font-size: 0.75rem;
   }
+  :global(.state-tip)::before { display: none; }
   :global(.leaflet-popup-tip) { background: var(--panel); }
   :global(.pin-pop b) { color: var(--accent); }
   :global(.pin-pop em) { color: var(--muted); }

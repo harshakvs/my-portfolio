@@ -33,6 +33,9 @@ export const profile = {
     'He published an IEEE paper on currency detection for the visually impaired.',
     'Monthly auto-retraining loops with drift detection. The models never get stale. Unlike my jokes.',
     'He says nobody can beat him at flag_rush in the arcade. Prove him wrong, please.',
-    'Two countries, five cities, one travel map below. More pins incoming.',
+    '28 states, 2 countries, 2 Himalayan treks. Check the travel map.',
+    'PSG fan AND Ferrari tifosi. He knows suffering builds character.',
+    'Played competitive cricket. The trophies are real, I have seen the shelf.',
+    'His cooking gets recipe requests. My power source gets firmware updates. We are not the same.',
   ],
 };

@@ -1,0 +1,8 @@
+---
+import Base from '../layouts/Base.astro';
+import TravelMap from '../components/TravelMap.astro';
+import { profile } from '../data/profile';
+---
+<Base title={`Travel | ${profile.name}`} description="28 states across two countries — shaded states, lived cities, and Himalayan treks on one dark map.">
+  <TravelMap />
+</Base>

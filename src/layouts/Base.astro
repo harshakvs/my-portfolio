@@ -2,6 +2,8 @@
 import '../styles/global.css';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
+import Chatbot from '../components/Chatbot.astro';
+import AvatarSprite from '../components/AvatarSprite.astro';
 import { profile } from '../data/profile';
 import { url } from '../data/url';
 
@@ -30,5 +32,7 @@ const {
     <Nav />
     <slot />
     <Footer />
+    <Chatbot />
+    <AvatarSprite />
   </body>
 </html>
