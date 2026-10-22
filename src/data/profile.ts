@@ -3,7 +3,7 @@ export const profile = {
   name: 'Sreeharsha Kotta',
   fullName: 'Venkata Sai Sreeharsha Kotta',
   role: 'Machine Learning Engineer',
-  tagline: 'I take ML systems from notebook to production — edge GPUs, training pipelines, and everything in between.',
+  tagline: 'I take AI systems from prototype to production — vision-language models, real-time video pipelines, and the GPU serving and infrastructure behind them.',
   location: 'USA',
   email: 'sreeharshakotta@gmail.com',
   resume: '/Resume_Sreeharsha_Kotta.pdf',
@@ -16,7 +16,8 @@ export const profile = {
   ],
   // Lines the hero terminal "types" on load
   terminalLines: [
-    { cmd: 'whoami', out: 'Sreeharsha Kotta — ML Engineer, 5+ yrs shipping production ML' },
+    { cmd: 'whoami', out: 'Sreeharsha Kotta — ML Engineer, 5+ yrs shipping production ML & VLM systems' },
+    { cmd: 'vllm serve qwen-vl', out: '4 GPUs · 600+ cameras · record → alert in 5–6s' },
     { cmd: 'nvidia-smi | grep -i util', out: 'GPU-Util: 98%  ·  latency: 6.8s → 1.9s @ 25 FPS' },
     { cmd: 'kubectl get pods -A | wc -l', out: '100+ edge devices · 600+ cameras · zero-downtime rollouts' },
     { cmd: './hire_me --role "AI Engineer"', out: 'exit 0 — let’s talk ↓' },
@@ -25,6 +26,8 @@ export const profile = {
   avatarFacts: [
     'Harsha cut video-pipeline latency from ~7s to under 2s at 25 FPS. I walk slower than that.',
     'He runs models on 100+ edge devices with MicroK8s. I only run on this page.',
+    '95% precision, 92% recall — in production, on live dashboards. Not a notebook number.',
+    'He tiles 6 video frames into one image so a VLM can see time. Sneaky.',
     '4.0 GPA in his M.S. in Analytics at Georgia State. Nerd.',
     'His forecasting models saved HP $26M in spare-parts overstock.',
     'He labeled millions of tweets with LLMs before it was cool.',

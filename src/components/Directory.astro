@@ -6,6 +6,7 @@ import { hobbies } from '../data/hobbies';
 import { url } from '../data/url';
 
 const posts = await getCollection('blog');
+const published = posts.filter((p) => p.data.status !== 'coming-soon').length;
 const states = visitedStates.us.length + visitedStates.india.length;
 
 const dirs = [
@@ -17,7 +18,7 @@ const dirs = [
   {
     href: '/blog', name: 'writing', emoji: '✍️',
     desc: 'Inference engineering, pipelines, and from-scratch builds — published here first',
-    stat: `${posts.length} posts`,
+    stat: `${published} published · ${posts.length - published} in progress`,
   },
   {
     href: '/arcade', name: 'arcade', emoji: '🕹️',

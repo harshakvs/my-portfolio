@@ -26,7 +26,7 @@ import { url } from '../data/url';
               <div class={`shots ${h.images.length > 1 ? 'two' : ''}`}>
                 {h.images.map((img) => (
                   <figure class="shot scanlines">
-                    <img src={url(img.src)} alt={img.alt} loading="lazy" data-ph={img.src} />
+                    <img src={url(img.src)} alt={img.alt} loading="lazy" data-ph={img.src} style={[img.pos && `object-position: ${img.pos}`, img.tall && 'aspect-ratio: 3/4'].filter(Boolean).join('; ') || undefined} />
                     <figcaption class="mono">{img.caption}</figcaption>
                   </figure>
                 ))}
