@@ -9,6 +9,8 @@ const blog = defineCollection({
     pubDate: z.coerce.date(),
     tags: z.array(z.string()).default([]),
     status: z.enum(['published', 'coming-soon']).default('coming-soon'),
+    // Set false to keep a published post off X and Substack (see scripts/crosspost).
+    crosspost: z.boolean().default(true),
   }),
 });
 

@@ -1,0 +1,92 @@
+name: Cross-post to X and Substack
+
+# Runs when a push to main touches a blog post. `prepare` drafts the X thread
+# and shows it in the run summary; `publish` waits for your approval (the
+# `crosspost` environment has you as a required reviewer), then posts.
+on:
+  push:
+    branches: [main]
+    paths: ['src/content/blog/**']
+  workflow_dispatch:
+    inputs:
+      slug:
+        description: 'Post to cross-post (file name in src/content/blog, without .md)'
+        required: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: crosspost
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      has_posts: ${{ steps.prep.outputs.has_posts }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: scripts/crosspost/requirements.txt
+      - run: pip install -r scripts/crosspost/requirements.txt
+      - id: prep
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: >
+          python scripts/crosspost/crosspost.py prepare
+          --before "${{ github.event.before }}"
+          --after "${{ github.sha }}"
+          --slug "${{ inputs.slug }}"
+          --out crosspost-out
+      - if: steps.prep.outputs.has_posts == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: crosspost
+          path: crosspost-out
+
+  publish:
+    needs: prepare
+    if: needs.prepare.outputs.has_posts == 'true'
+    runs-on: ubuntu-latest
+    environment: crosspost
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: scripts/crosspost/requirements.txt
+      - run: pip install -r scripts/crosspost/requirements.txt
+      - uses: actions/download-artifact@v4
+        with:
+          name: crosspost
+          path: crosspost-out
+      - name: Post to X and create Substack draft
+        env:
+          X_API_KEY: ${{ secrets.X_API_KEY }}
+          X_API_SECRET: ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
+          SUBSTACK_COOKIES: ${{ secrets.SUBSTACK_COOKIES }}
+          SUBSTACK_PUBLICATION_URL: ${{ secrets.SUBSTACK_PUBLICATION_URL }}
+        run: python scripts/crosspost/crosspost.py publish --input crosspost-out
+      # Record what was posted even if one platform failed, so a re-run
+      # doesn't post the same thread twice.
+      - name: Record cross-posts
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add scripts/crosspost/posted.json
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: record cross-posts [skip ci]"
+          git pull --rebase origin main
+          git push origin HEAD:main
