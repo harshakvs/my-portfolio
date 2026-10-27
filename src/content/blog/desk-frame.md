@@ -6,14 +6,17 @@ tags: ['hardware', 'android', 'cloudflare', 'alexa', 'side-project']
 status: 'coming-soon'
 ---
 
-<!-- TODO(harsha): add your photos/video at the MEDIA markers and read it once in your own voice before publishing. -->
+<!-- TODO(harsha): add the Alexa clip at the last MEDIA marker and read it once in your own voice before publishing. -->
 
 <figure>
   <img src="/my-portfolio/blog/desk-frame/tour.gif" alt="Animated tour of the dashboard on the frame">
   <figcaption>Every frame of this GIF is a screenshot pulled off the device itself.</figcaption>
 </figure>
 
-<!-- MEDIA: hero photo of the frame on the desk -->
+<figure>
+  <img src="/my-portfolio/blog/desk-frame/desk.jpg" alt="The photo frame on my desk running the dashboard">
+  <figcaption>The $50 frame on my desk.</figcaption>
+</figure>
 
 [Wes Bos posted](https://wesbos.com/hacking-smart-photo-frames) about turning cheap Amazon photo frames into family dashboards, and I had exactly one thought: *I need this on my desk.* So I bought the $50 frame, opened his [photo-frame-dashboard](https://github.com/wesbos/photo-frame-dashboard) repo, and then kept going.
 
@@ -86,7 +89,10 @@ Before changing a byte, I copied the whole **15.7 GB** of storage to the Mac in 
 - **Chess, focus and a screensaver.** Lichess puzzles with tap-to-move, a focus timer tied to my to-do list, and a photo screensaver that turns into a dim clock overnight.
 - **A "say hi to Claude" button** that starts my Claude usage window early by having a GitHub Action send one tiny message.
 
-<!-- MEDIA: photo or short clip of tapping around -->
+<figure>
+  <video src="/my-portfolio/blog/desk-frame/desk-tour.mp4" poster="/my-portfolio/blog/desk-frame/desk.jpg" controls muted playsinline preload="metadata"></video>
+  <figcaption>48 seconds of tapping around: dark mode (focus, chess, groceries, smart home), then light mode.</figcaption>
+</figure>
 
 <figure>
   <img src="/my-portfolio/blog/desk-frame/groceries.jpg" alt="Expanded grocery list with calories and basket mix">
