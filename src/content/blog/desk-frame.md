@@ -1,12 +1,10 @@
 ---
 title: 'I turned a $50 photo frame into a desk command center that talks to Alexa'
 description: 'Unlocking a PF1007L photo frame without flashing it, a checksum-verified 15.7 GB backup, WebView 106, a Cloudflare Worker dashboard, and Alexa in both directions. One evening, one frame, lots of yak shaving.'
-pubDate: 2026-10-27
+pubDate: 2026-10-26
 tags: ['hardware', 'android', 'cloudflare', 'alexa', 'side-project']
-status: 'coming-soon'
+status: 'published'
 ---
-
-<!-- TODO(harsha): add the Alexa clip at the last MEDIA marker and read it once in your own voice before publishing. -->
 
 <figure>
   <img src="/my-portfolio/blog/desk-frame/tour.gif" alt="Animated tour of the dashboard on the frame">
@@ -88,6 +86,7 @@ Before changing a byte, I copied the whole **15.7 GB** of storage to the Mac in 
 - **A reader mode.** Tap any headline or FPL article and the Worker extracts the text, so I can read Fantasy Football Scout on the frame with no ads.
 - **Chess, focus and a screensaver.** Lichess puzzles with tap-to-move, a focus timer tied to my to-do list, and a photo screensaver that turns into a dim clock overnight.
 - **A "say hi to Claude" button** that starts my Claude usage window early by having a GitHub Action send one tiny message.
+- **Birthdays from my iPhone.** A script reads birthdays from Apple Contacts (the source of Apple Calendar's Birthdays calendar) and uploads them to the Worker. The greeting line switches to "🎂 Mom in 2 days" three days out, and the screensaver mentions it too.
 
 <figure>
   <video src="/my-portfolio/blog/desk-frame/desk-tour.mp4" poster="/my-portfolio/blog/desk-frame/desk.jpg" controls muted playsinline preload="metadata"></video>
@@ -104,11 +103,18 @@ Before changing a byte, I copied the whole **15.7 GB** of storage to the Mac in 
 **Voice → frame.** I built a private Alexa skill called *my desk*. Alexa POSTs to `/alexa` on the Worker, and the skill reads and writes the same records the frame shows:
 
 ```text
-"Alexa, ask my desk to add eggs"            → on the grocery list within 30 s
-"Alexa, tell my desk I drank water"         → water counter goes up
 "Alexa, ask my desk for my FPL score"       → "35 points this gameweek, rank 973,654,
                                                2 free transfers, £1.4m in the bank…"
+"Alexa, tell my desk I drank water"         → water counter goes up on the frame
+"Alexa, tell my desk I took my magnesium"   → supplement ticked off
+"Alexa, ask my desk when do PSG play"       → next match and last result
+"Alexa, ask my desk for the India score"    → live score or next match
 ```
+
+<figure>
+  <video src="/my-portfolio/blog/desk-frame/fpl-alexa-web.mp4" poster="/my-portfolio/blog/desk-frame/fpl-poster.jpg" controls playsinline preload="metadata"></video>
+  <figcaption>Sound on: asking my desk for my FPL score.</figcaption>
+</figure>
 
 Since Alexa can't send my dashboard key, the endpoint verifies each request the way Amazon requires: the signing certificate's URL, the RSA signature over the raw body, a fresh timestamp and my skill ID. Doing that in a Worker meant writing a small DER parser to pull the public key out of the certificate. That was the most "wait, I'm doing *what*" moment of the night.
 
@@ -119,7 +125,7 @@ Since Alexa can't send my dashboard key, the endpoint verifies each request the 
   <figcaption>Two buttons, real lights.</figcaption>
 </figure>
 
-<!-- MEDIA: short video — "Alexa, tell my desk I drank water", the counter ticking up, then tapping Good Night -->
+**The one thing Alexa wouldn't let me have: groceries by voice.** "Ask my desk to add eggs" sounds simple, but Alexa's built-in shopping list grabs anything that sounds like *add X*, even inside my skill's own conversation. I tried a custom slot trained on 130 grocery items, keeping the session open, and slot elicitation so Alexa should *expect* an item. The built-in list still won most of the time. And since Amazon shut off third-party access to Alexa's lists in July 2024, I can't just read that list either. For now groceries are typed on the frame, and the real fix is Home Assistant, whose Alexa integration can read Alexa's own shopping list.
 
 ## Act 7: ship it
 
@@ -132,11 +138,13 @@ Every `git push` deploys the Worker through GitHub Actions in about 20 seconds. 
 - A router setting that **renamed my Mac** and mislabeled my git commits.
 - **Restarting the kiosk** silently disabled the floating back buttons.
 - **Writing junk into the cloud store** during migration, because I copied before validating. Now every copy is validated first, and every storage read tolerates bad data.
-- An Alexa catch-all slot that saved *"protein powder to my list"* as one grocery item.
+- An Alexa catch-all slot that saved *"protein powder to my list"* as one grocery item, and *"eggs and bread"* arriving as the single item "eggs bread".
+- **Alexa's built-in shopping list** beating my skill to every grocery request (see Act 6).
+- A catch-all **fallback intent** that made Alexa worse at understanding everything else. Logging every request's matched intent with `wrangler tail` is what found it.
 
 ## What's next
 
-Home Assistant on a Raspberry Pi for real two-way device state, maybe a 3D model of the room, a commute card, and a Robinhood/Muse markets view.
+Home Assistant on a Raspberry Pi: real two-way device state, Alexa's shopping list on the frame, and maybe a 3D model of the room. Also a commute card and a Robinhood/Muse markets view.
 
 ## Credits
 
