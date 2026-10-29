@@ -46,8 +46,6 @@ The usual route is a boot patch written from a microSD card. I didn't have one. 
 
 The repo documents another route for this firmware that needs no flashing, using the vendor app's own network connection. A few minutes later I had a root shell and set the frame to keep ADB over USB after reboots. I won't turn this into a recipe here; the repo's [start page](https://github.com/wesbos/photo-frame-dashboard/blob/main/docs/pf1007l-start-here.md) has the procedure and its safety checks. The takeaway is what it revealed: **the stock vendor app is far more powerful than a photo app should be**, so disabling it was the first thing I did once I had a safe way back in.
 
-**Plot twist I didn't see coming:** a temporary router setting from that step changed my *Mac's* hostname. My terminal prompt changed, and because I'd never set `git config user.email`, git started signing my commits with an address based on that hostname. That also explained why my commits never showed on my GitHub contribution graph. Two bugs, one router setting.
-
 ## Act 3: back it up like you mean it
 
 Before changing a byte, I copied the whole **15.7 GB** of storage to the Mac in 61 chunks of 256 MB. Each chunk was hashed **on the frame** and **on the Mac**, and the two had to match: zero retries. The boot image's hash matched the known firmware, so I knew exactly which bytes I was dealing with. It took about 40 minutes, and it's why everything after felt safe.
@@ -135,7 +133,6 @@ Every `git push` deploys the Worker through GitHub Actions in about 20 seconds. 
 
 - A **charge-only** cable in the box.
 - Bricking fears, so: **back up first** and hash every chunk on both ends.
-- A router setting that **renamed my Mac** and mislabeled my git commits.
 - **Restarting the kiosk** silently disabled the floating back buttons.
 - **Writing junk into the cloud store** during migration, because I copied before validating. Now every copy is validated first, and every storage read tolerates bad data.
 - An Alexa catch-all slot that saved *"protein powder to my list"* as one grocery item, and *"eggs and bread"* arriving as the single item "eggs bread".
