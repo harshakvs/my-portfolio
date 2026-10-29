@@ -12,7 +12,7 @@ export const profile = {
     { label: 'GitHub', url: 'https://github.com/harshakvs', icon: 'github' },
     { label: 'LinkedIn', url: 'https://www.linkedin.com/in/sreeharsha-kvs', icon: 'linkedin' },
     { label: 'YouTube', url: '', icon: 'youtube', comingSoon: true }, // add channel URL when live
-    { label: 'Medium', url: '', icon: 'medium', comingSoon: true }, // add profile URL when live
+    { label: 'Medium', url: 'https://medium.com/@harshakvs16', icon: 'medium' },
   ],
   // Lines the hero terminal "types" on load
   terminalLines: [
