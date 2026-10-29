@@ -28,7 +28,9 @@ export const hobbies: Hobby[] = [
     tag: 'new obsession',
     blurb:
       'The newest addiction. Turns out chasing a tiny ball across a giant lawn is the perfect gradient descent metaphor — small corrections, occasional divergence.',
-    images: [], // add { src: '/hobbies/golf.jpg', alt: 'On the golf course', caption: 'negotiating with my slice' } once the photo exists
+    images: [
+      { src: '/hobbies/golf.jpg', alt: 'Top of my backswing on the driving range', caption: 'negotiating with my slice', pos: 'center 35%', tall: true },
+    ],
   },
   {
     title: 'Football · PSG',
