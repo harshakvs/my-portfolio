@@ -11,6 +11,7 @@ export const profile = {
   socials: [
     { label: 'GitHub', url: 'https://github.com/harshakvs', icon: 'github' },
     { label: 'LinkedIn', url: 'https://www.linkedin.com/in/sreeharsha-kvs', icon: 'linkedin' },
+    { label: 'X', url: 'https://x.com/harshakvs7', icon: 'x' },
     { label: 'YouTube', url: '', icon: 'youtube', comingSoon: true }, // add channel URL when live
     { label: 'Medium', url: 'https://medium.com/@harshakvs16', icon: 'medium' },
   ],
