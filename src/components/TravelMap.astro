@@ -55,9 +55,12 @@ const counts = {
   map.on('click', () => map.scrollWheelZoom.enable());
   map.on('mouseout', () => map.scrollWheelZoom.disable());
 
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
-    subdomains: 'abcd',
+  // CARTO basemaps need a key since Sept 2026; without one every tile is an
+  // "API KEY REQUIRED" watermark. Free non-commercial key: carto.com/basemaps/apikey.
+  // It ships in client JS no matter what, so it lives here rather than in a secret.
+  const CARTO_KEY = 'cb1_5g47_1_c01acd9fc1447053f1b8f47d';
+  L.tileLayer(`https://basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png?key=${CARTO_KEY}`, {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
   }).addTo(map);
 
   // Shade visited states
