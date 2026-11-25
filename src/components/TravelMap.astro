@@ -50,10 +50,9 @@ const counts = {
     minZoom: 2,
     maxZoom: 12,
     worldCopyJump: true,
-    scrollWheelZoom: false, // click map to enable, so page scroll isn't hijacked
+    // Map is the main content of /travel, so the wheel zooms it directly.
+    scrollWheelZoom: true,
   });
-  map.on('click', () => map.scrollWheelZoom.enable());
-  map.on('mouseout', () => map.scrollWheelZoom.disable());
 
   // CARTO basemaps need a key since Sept 2026; without one every tile is an
   // "API KEY REQUIRED" watermark. Free non-commercial key: carto.com/basemaps/apikey.

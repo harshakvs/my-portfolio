@@ -46,6 +46,11 @@ export const cityDots: { name: string; coords: [number, number] }[] = [
   { name: 'Raleigh', coords: [35.78, -78.64] },
   { name: 'Charlotte', coords: [35.23, -80.84] },
   { name: 'Richmond', coords: [37.54, -77.44] },
+  { name: 'Baltimore', coords: [39.29, -76.61] },
+  { name: 'Ocean City', coords: [38.34, -75.08] },
+  { name: 'Nashville', coords: [36.16, -86.78] },
+  { name: 'Chattanooga', coords: [35.05, -85.31] },
+  { name: 'Dallas', coords: [32.78, -96.8] },
   // India
   { name: 'Kochi', coords: [9.93, 76.27] },
   { name: 'Trivandrum', coords: [8.52, 76.94] },
@@ -59,10 +64,12 @@ export const visitedStates = {
   us: [
     'Georgia', 'Virginia', 'District of Columbia', 'Illinois', 'New York', 'Florida',
     'Pennsylvania', 'New Hampshire', 'Rhode Island', 'Louisiana', 'South Carolina', 'North Carolina',
+    'Maryland', 'Tennessee', 'Texas',
   ],
   india: [
     'Delhi', 'Uttar Pradesh', 'Punjab', 'Gujarat', 'Maharashtra', 'Madhya Pradesh',
     'Andhra Pradesh', 'Telangana', 'Karnataka', 'Tamil Nadu', 'Kerala',
     'Himachal Pradesh', 'Uttarakhand', 'Sikkim', 'West Bengal', 'Bihar',
+    'Goa', 'Andaman and Nicobar Islands', 'Lakshadweep',
   ],
 };
