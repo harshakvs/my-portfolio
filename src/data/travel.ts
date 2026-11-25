@@ -6,7 +6,7 @@ export type Pin = {
   emoji?: string;
 };
 
-// Big markers: places lived + treks. Small dots: cities visited. States get shaded.
+// Pins: places lived + treks. Everywhere else is tracked at state level (visitedStates).
 export const pins: Pin[] = [
   // USA
   { name: 'Atlanta, GA', coords: [33.75, -84.39], type: 'lived', note: 'M.S. @ Georgia State — 4.0 GPA', emoji: '🍑' },
@@ -26,39 +26,6 @@ export const pins: Pin[] = [
   { name: 'Triund trek', coords: [32.25, 76.35], type: 'trek', note: 'Dhauladhar views, Himachal', emoji: '⛺' },
 ];
 
-// Visited cities — rendered as small glowing dots
-export const cityDots: { name: string; coords: [number, number] }[] = [
-  // USA
-  { name: 'Chicago', coords: [41.88, -87.63] },
-  { name: 'New York City', coords: [40.71, -74.01] },
-  { name: 'Miami', coords: [25.76, -80.19] },
-  { name: 'Philadelphia', coords: [39.95, -75.17] },
-  { name: 'Pittsburgh', coords: [40.44, -80.0] },
-  { name: 'New Hampshire', coords: [43.9, -71.5] },
-  { name: 'Rhode Island', coords: [41.82, -71.41] },
-  { name: 'Panama City Beach', coords: [30.18, -85.81] },
-  { name: 'New Orleans', coords: [29.95, -90.07] },
-  { name: 'Pensacola', coords: [30.42, -87.22] },
-  { name: 'Destin', coords: [30.39, -86.5] },
-  { name: 'Savannah', coords: [32.08, -81.09] },
-  { name: 'Charleston', coords: [32.78, -79.93] },
-  { name: 'Myrtle Beach', coords: [33.69, -78.89] },
-  { name: 'Raleigh', coords: [35.78, -78.64] },
-  { name: 'Charlotte', coords: [35.23, -80.84] },
-  { name: 'Richmond', coords: [37.54, -77.44] },
-  { name: 'Baltimore', coords: [39.29, -76.61] },
-  { name: 'Ocean City', coords: [38.34, -75.08] },
-  { name: 'Nashville', coords: [36.16, -86.78] },
-  { name: 'Chattanooga', coords: [35.05, -85.31] },
-  { name: 'Dallas', coords: [32.78, -96.8] },
-  // India
-  { name: 'Kochi', coords: [9.93, 76.27] },
-  { name: 'Trivandrum', coords: [8.52, 76.94] },
-  { name: 'Kanyakumari', coords: [8.09, 77.54] },
-  { name: 'Dhanushkodi', coords: [9.15, 79.44] },
-  { name: 'Gangtok', coords: [27.33, 88.61] },
-];
-
 // Names must match the GeoJSON exactly: us-states.json `name`, india-states.json `st_nm`
 export const visitedStates = {
   us: [
@@ -73,3 +40,6 @@ export const visitedStates = {
     'Goa', 'Andaman and Nicobar Islands', 'Lakshadweep',
   ],
 };
+
+// Used in copy across the site (travel page, hobbies card, chatbot, robot), so it never goes stale.
+export const stateCount = visitedStates.us.length + visitedStates.india.length;

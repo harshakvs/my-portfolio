@@ -1,3 +1,5 @@
+import { stateCount } from './travel';
+
 export type Hobby = {
   title: string;
   emoji: string;
@@ -64,9 +66,9 @@ export const hobbies: Hobby[] = [
   {
     title: 'Travelling',
     emoji: '🌍',
-    tag: '28 states deep',
+    tag: `${stateCount} states deep`,
     blurb:
-      'Two countries, 28 states/regions and counting — Himalayan treks to Gulf-coast beaches. The full log lives on the map.',
+      `Two countries, ${stateCount} states/regions and counting — Himalayan treks to Gulf-coast beaches. The full log lives on the map.`,
     images: [],
     link: { href: '/travel', label: 'open the map →' },
   },

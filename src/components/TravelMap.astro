@@ -1,31 +1,28 @@
 ---
-import { pins, cityDots, visitedStates } from '../data/travel';
+import { pins, visitedStates, stateCount } from '../data/travel';
 
 const counts = {
   lived: pins.filter((p) => p.type === 'lived').length,
   treks: pins.filter((p) => p.type === 'trek').length,
-  cities: cityDots.length,
-  states: visitedStates.us.length + visitedStates.india.length,
+  states: stateCount,
 };
 ---
 <section id="travel" class="section">
   <div class="container">
     <h2 class="section-title">cat travel.geojson | render --dark</h2>
     <p class="section-sub">
-      Shaded states: covered. Big pins: lived there (or climbed it). Small dots: passed through and ate well.
+      Shaded states: covered. Pins: lived there (or climbed it).
       Drag, zoom, click everything.
     </p>
     <div class="map-card card">
       <div
         id="travel-map"
         data-pins={JSON.stringify(pins)}
-        data-dots={JSON.stringify(cityDots)}
         data-states={JSON.stringify(visitedStates)}
       ></div>
       <div class="map-stats mono">
         <span>🏠 lived: <b>{counts.lived}</b></span>
         <span>🏔️ treks: <b>{counts.treks}</b></span>
-        <span>📍 cities: <b>{counts.cities}+</b></span>
         <span>🗺️ states covered: <b>{counts.states}</b></span>
         <span>🌍 countries: <b>2 (so far)</b></span>
       </div>
@@ -41,7 +38,6 @@ const counts = {
   const BASE = import.meta.env.BASE_URL.replace(/\/$/, '');
   const el = document.getElementById('travel-map')!;
   const pins: Pin[] = JSON.parse(el.dataset.pins!);
-  const dots: { name: string; coords: [number, number] }[] = JSON.parse(el.dataset.dots!);
   const states: { us: string[]; india: string[] } = JSON.parse(el.dataset.states!);
 
   const map = L.map(el, {
@@ -85,15 +81,6 @@ const counts = {
   }
   shade('us-states.json', 'name', states.us);
   shade('india-states.json', 'st_nm', states.india);
-
-  // Visited-city dots
-  for (const d of dots) {
-    L.circleMarker(d.coords, {
-      radius: 4, color: '#58b8ff', weight: 1.5, fillColor: '#58b8ff', fillOpacity: 0.6,
-    })
-      .addTo(map)
-      .bindTooltip(d.name, { className: 'state-tip' });
-  }
 
   // Lived / trek pins on top
   const pinEmoji: Record<string, string> = { lived: '🏠', trek: '🏔️' };
